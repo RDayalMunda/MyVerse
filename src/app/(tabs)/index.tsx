@@ -13,28 +13,38 @@ import {
   ProjectCard,
   ProjectCardSkeleton,
 } from '@/components/projects/project-card';
+import { ProjectCreateFab } from '@/components/projects/project-create-fab';
+import { CREATE_FAB_LIST_PADDING } from '@/components/ui/create-fab';
 import { useProjects } from '@/hooks/use-projects';
 import { useTheme } from '@/hooks/use-theme';
+import { canManageProjects } from '@/lib/permissions';
+import { useAuthStore } from '@/stores/auth-store';
 
 export default function ProjectsScreen() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = canManageProjects(user?.role);
   const { projects, meta, isLoading, error, refetch } = useProjects();
+
+  const listPaddingBottom =
+    insets.bottom + (isAdmin ? CREATE_FAB_LIST_PADDING : 16);
 
   if (isLoading && projects.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Text style={[styles.heading, { color: colors.text }]}>Projects</Text>
-          <Text style={[styles.subheading, { color: colors.textSecondary }]}>
-            Explore the MyVerse universe
-          </Text>
-        </View>
-        <View style={styles.list}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.list, { paddingBottom: listPaddingBottom }]}>
+          <View style={styles.header}>
+            <Text style={[styles.heading, { color: colors.text }]}>Projects</Text>
+            <Text style={[styles.subheading, { color: colors.textSecondary }]}>
+              Explore the MyVerse universe
+            </Text>
+          </View>
           <ProjectCardSkeleton />
           <ProjectCardSkeleton />
           <ProjectCardSkeleton />
         </View>
+        <ProjectCreateFab />
       </View>
     );
   }
@@ -42,10 +52,7 @@ export default function ProjectsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        contentContainerStyle={[
-          styles.list,
-          { paddingBottom: insets.bottom + 16 },
-        ]}
+        contentContainerStyle={[styles.list, { paddingBottom: listPaddingBottom }]}
         data={projects}
         keyExtractor={(item) => item.id}
         refreshControl={
@@ -72,7 +79,13 @@ export default function ProjectsScreen() {
               onAction={refetch}
             />
           ) : (
-            <EmptyState message="No projects published yet." />
+            <EmptyState
+              message={
+                isAdmin
+                  ? 'No projects published yet. Tap + to create one.'
+                  : 'No projects published yet.'
+              }
+            />
           )
         }
         renderItem={({ item }) => <ProjectCard project={item} />}
@@ -82,6 +95,7 @@ export default function ProjectsScreen() {
           <ActivityIndicator color={colors.tint} />
         </View>
       ) : null}
+      <ProjectCreateFab />
     </View>
   );
 }

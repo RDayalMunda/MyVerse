@@ -3,13 +3,14 @@ import { Tabs } from 'expo-router';
 
 import { AuthHeaderActions } from '@/components/navigation/auth-header';
 import { useTheme } from '@/hooks/use-theme';
-import { canManageUsers } from '@/lib/permissions';
+import { canManageProjects, canManageUsers } from '@/lib/permissions';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
   const user = useAuthStore((state) => state.user);
   const showUsersTab = canManageUsers(user?.role);
+  const showAdminTab = canManageProjects(user?.role);
 
   return (
     <Tabs
@@ -41,6 +42,16 @@ export default function TabsLayout() {
           title: 'Staff',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: 'Admin',
+          href: showAdminTab ? undefined : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="hammer-outline" size={size} color={color} />
           ),
         }}
       />

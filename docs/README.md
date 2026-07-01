@@ -7,6 +7,8 @@ Documentation for the MyVerse Expo app (web, iOS, Android).
 | Document | Description |
 |----------|-------------|
 | [AUTH.md](./AUTH.md) | Login, logout, session persistence, navigation permissions |
+| [ROADMAP.md](./ROADMAP.md) | Module-wise integration plan and slice status |
+| [SLICE_1.md](./SLICE_1.md) | Admin book pipeline + consumer project detail |
 
 ## Backend
 

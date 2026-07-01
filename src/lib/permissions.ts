@@ -7,3 +7,7 @@ export function canReadStaff(_role?: UserRole | null): boolean {
 export function canManageUsers(role?: UserRole | null): boolean {
   return role === 'ADMIN';
 }
+
+export function canManageProjects(role?: UserRole | null): boolean {
+  return role === 'ADMIN';
+}

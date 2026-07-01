@@ -1,10 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
 
 import { useTheme } from '@/hooks/use-theme';
 import type { Project } from '@/types/project';
 
 type ProjectCardProps = {
   project: Project;
+  onPress?: () => void;
+  showStatus?: boolean;
 };
 
 const TYPE_LABELS: Record<Project['type'], string> = {
@@ -13,17 +16,39 @@ const TYPE_LABELS: Record<Project['type'], string> = {
   SHOW: 'Show',
 };
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onPress, showStatus = false }: ProjectCardProps) {
   const { colors } = useTheme();
+  const router = useRouter();
+
+  function handlePress() {
+    if (onPress) {
+      onPress();
+      return;
+    }
+    router.push(`/project/${project.id}` as Href);
+  }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+      ]}
+    >
       <View style={styles.header}>
         <View style={[styles.chip, { backgroundColor: colors.background }]}>
           <Text style={[styles.chipText, { color: colors.tint }]}>
             {TYPE_LABELS[project.type]}
           </Text>
         </View>
+        {showStatus ? (
+          <View style={[styles.statusBadge, { borderColor: colors.border }]}>
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+              {project.status}
+            </Text>
+          </View>
+        ) : null}
         {project.isAdult ? (
           <View style={[styles.adultBadge, { borderColor: colors.error }]}>
             <Text style={[styles.adultText, { color: colors.error }]}>18+</Text>
@@ -45,7 +70,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           No description
         </Text>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -119,6 +144,16 @@ const styles = StyleSheet.create({
   adultText: {
     fontSize: 11,
     fontWeight: '700',
+  },
+  statusBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   title: {
     fontSize: 18,
