@@ -64,6 +64,15 @@ Permission helpers live in `src/lib/permissions.ts` and mirror backend role rule
 
 `src/api/client.ts` attaches `Authorization: Bearer <token>` when a session exists. A 401 on authenticated requests triggers automatic logout.
 
+## Staff self-registration
+
+Staff can register via `POST /auth/register/staff` (see [STAFF.md](./STAFF.md)).
+
+1. Client uploads profile photo via `POST /media/upload`
+2. Client calls `POST /auth/register/staff` with account + profile + `profilePicture`
+3. On success: `registerStaff` in auth store calls `setSession(accessToken, user)` — same persistence as login
+4. User is logged in as `STAFF` with JWT in AsyncStorage
+
 ## Related backend docs
 
 - [My-Verse-Backend/docs/AUTH.md](../../My-Verse-Backend/docs/AUTH.md)

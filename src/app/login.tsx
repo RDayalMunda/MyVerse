@@ -1,12 +1,18 @@
-import { useRouter, type Href } from 'expo-router';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { type Href } from 'expo-router';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LoginForm } from '@/components/auth/login-form';
 import { useTheme } from '@/hooks/use-theme';
+import { resetNavigationTo } from '@/lib/auth-navigation';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
 
@@ -27,8 +33,8 @@ export default function LoginScreen() {
       >
         <View style={styles.formWrap}>
           <LoginForm
-            onSuccess={() => router.replace('/(tabs)' as Href)}
-            onContinueWithoutLogin={() => router.replace('/(tabs)' as Href)}
+            onSuccess={() => resetNavigationTo('/(tabs)' as Href)}
+            onContinueWithoutLogin={() => resetNavigationTo('/(tabs)' as Href)}
           />
         </View>
       </ScrollView>

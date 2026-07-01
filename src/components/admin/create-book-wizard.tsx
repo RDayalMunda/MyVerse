@@ -14,6 +14,7 @@ import { createTextItemApi } from '@/api/section-items.api';
 import { createSectionApi, publishSectionApi } from '@/api/sections.api';
 import { createBookApi, publishProjectApi } from '@/api/projects.api';
 import { useTheme } from '@/hooks/use-theme';
+import { FIELD_HINTS, validateRequiredText } from '@/lib/form-validation';
 import { getErrorMessage } from '@/types/api';
 
 type WizardStep = 1 | 2 | 3 | 4;
@@ -37,6 +38,7 @@ export function CreateBookWizard() {
   const [sectionLabel, setSectionLabel] = useState('');
   const [sectionDescription, setSectionDescription] = useState('');
   const [textContent, setTextContent] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   function canProceed(): boolean {
     switch (step) {
@@ -55,8 +57,14 @@ export function CreateBookWizard() {
 
   async function handleNext() {
     setError(null);
+    setSubmitAttempted(true);
 
     if (step === 1) {
+      const titleError = validateRequiredText(title, 'Title');
+      if (titleError) {
+        setError(titleError);
+        return;
+      }
       setIsLoading(true);
       try {
         const project = await createBookApi({
@@ -66,6 +74,7 @@ export function CreateBookWizard() {
         });
         setProjectId(project.id);
         setStep(2);
+        setSubmitAttempted(false);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -75,6 +84,11 @@ export function CreateBookWizard() {
     }
 
     if (step === 2 && projectId) {
+      const labelError = validateRequiredText(sectionLabel, 'Section label');
+      if (labelError) {
+        setError(labelError);
+        return;
+      }
       setIsLoading(true);
       try {
         const section = await createSectionApi(projectId, {
@@ -83,6 +97,7 @@ export function CreateBookWizard() {
         });
         setSectionId(section.id);
         setStep(3);
+        setSubmitAttempted(false);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -92,12 +107,18 @@ export function CreateBookWizard() {
     }
 
     if (step === 3 && projectId && sectionId) {
+      const contentError = validateRequiredText(textContent, 'Text content');
+      if (contentError) {
+        setError(contentError);
+        return;
+      }
       setIsLoading(true);
       try {
         await createTextItemApi(projectId, sectionId, {
           textContent: textContent.trim(),
         });
         setStep(4);
+        setSubmitAttempted(false);
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -122,6 +143,7 @@ export function CreateBookWizard() {
 
   function handleBack() {
     setError(null);
+    setSubmitAttempted(false);
     if (step > 1) {
       setStep((s) => (s - 1) as WizardStep);
     }
@@ -172,17 +194,25 @@ export function CreateBookWizard() {
       {step === 1 ? (
         <View style={styles.step}>
           <Text style={[styles.stepTitle, { color: colors.text }]}>Book details</Text>
-          <Field label="Title *" colors={colors}>
+          <Field label="Title *" hint={FIELD_HINTS.bookTitle} colors={colors}>
             <TextInput
-              style={[styles.input, inputStyle(colors)]}
+              style={[
+                styles.input,
+                inputStyle(colors, submitAttempted && !title.trim()),
+              ]}
               value={title}
               onChangeText={setTitle}
               placeholder="My First Book"
               placeholderTextColor={colors.textSecondary}
               editable={!isLoading}
             />
+            {submitAttempted && !title.trim() ? (
+              <Text style={[styles.fieldError, { color: colors.error }]}>
+                Title is required
+              </Text>
+            ) : null}
           </Field>
-          <Field label="Description" colors={colors}>
+          <Field label="Description" hint="Optional. Short blurb for the catalog." colors={colors}>
             <TextInput
               style={[styles.input, styles.multiline, inputStyle(colors)]}
               value={description}
@@ -193,7 +223,7 @@ export function CreateBookWizard() {
               editable={!isLoading}
             />
           </Field>
-          <Field label="Summary" colors={colors}>
+          <Field label="Summary" hint="Optional. Longer summary for the book detail page." colors={colors}>
             <TextInput
               style={[styles.input, styles.multiline, inputStyle(colors)]}
               value={summary}
@@ -210,17 +240,25 @@ export function CreateBookWizard() {
       {step === 2 ? (
         <View style={styles.step}>
           <Text style={[styles.stepTitle, { color: colors.text }]}>First section</Text>
-          <Field label="Label *" colors={colors}>
+          <Field label="Label *" hint={FIELD_HINTS.sectionLabel} colors={colors}>
             <TextInput
-              style={[styles.input, inputStyle(colors)]}
+              style={[
+                styles.input,
+                inputStyle(colors, submitAttempted && !sectionLabel.trim()),
+              ]}
               value={sectionLabel}
               onChangeText={setSectionLabel}
               placeholder="Chapter 1"
               placeholderTextColor={colors.textSecondary}
               editable={!isLoading}
             />
+            {submitAttempted && !sectionLabel.trim() ? (
+              <Text style={[styles.fieldError, { color: colors.error }]}>
+                Section label is required
+              </Text>
+            ) : null}
           </Field>
-          <Field label="Description" colors={colors}>
+          <Field label="Description" hint="Optional section description." colors={colors}>
             <TextInput
               style={[styles.input, styles.multiline, inputStyle(colors)]}
               value={sectionDescription}
@@ -237,9 +275,13 @@ export function CreateBookWizard() {
       {step === 3 ? (
         <View style={styles.step}>
           <Text style={[styles.stepTitle, { color: colors.text }]}>Chapter content</Text>
-          <Field label="Text *" colors={colors}>
+          <Field label="Text *" hint={FIELD_HINTS.textContent} colors={colors}>
             <TextInput
-              style={[styles.input, styles.textArea, inputStyle(colors)]}
+              style={[
+                styles.input,
+                styles.textArea,
+                inputStyle(colors, submitAttempted && !textContent.trim()),
+              ]}
               value={textContent}
               onChangeText={setTextContent}
               placeholder="Write your chapter here..."
@@ -247,6 +289,11 @@ export function CreateBookWizard() {
               multiline
               editable={!isLoading}
             />
+            {submitAttempted && !textContent.trim() ? (
+              <Text style={[styles.fieldError, { color: colors.error }]}>
+                Text content is required
+              </Text>
+            ) : null}
           </Field>
         </View>
       ) : null}
@@ -311,10 +358,12 @@ export function CreateBookWizard() {
 
 function Field({
   label,
+  hint,
   colors,
   children,
 }: {
   label: string;
+  hint?: string;
   colors: ReturnType<typeof useTheme>['colors'];
   children: ReactNode;
 }) {
@@ -322,14 +371,20 @@ function Field({
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
       {children}
+      {hint ? (
+        <Text style={[styles.hint, { color: colors.textSecondary }]}>{hint}</Text>
+      ) : null}
     </View>
   );
 }
 
-function inputStyle(colors: ReturnType<typeof useTheme>['colors']) {
+function inputStyle(
+  colors: ReturnType<typeof useTheme>['colors'],
+  hasError = false,
+) {
   return {
     color: colors.text,
-    borderColor: colors.border,
+    borderColor: hasError ? colors.error : colors.border,
     backgroundColor: colors.background,
   };
 }
@@ -388,6 +443,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  hint: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  fieldError: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   input: {
     borderWidth: 1,

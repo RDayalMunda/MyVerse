@@ -73,6 +73,56 @@ export default function RootLayout() {
             headerShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="staff/register"
+          options={{
+            headerShown: true,
+            title: 'Join as staff',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="staff/create"
+          options={{
+            headerShown: true,
+            title: 'Create staff',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="staff/edit"
+          options={{
+            headerShown: true,
+            title: 'Edit profile',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="staff/[id]"
+          options={{
+            headerShown: true,
+            title: 'Staff profile',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="staff/[id]/edit-account"
+          options={{
+            headerShown: true,
+            title: 'Edit account',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );

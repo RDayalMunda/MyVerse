@@ -1,5 +1,7 @@
 export type UserRole = 'ADMIN' | 'STAFF' | 'PUBLIC';
 
+import type { StaffProfile } from '@/types/staff';
+
 export type FileMeta = {
   mediaId: string;
   url: string;
@@ -18,6 +20,7 @@ export type User = {
   isActive: boolean;
   nsfwEnabled: boolean;
   defaultVisibility?: string;
+  staffProfile?: StaffProfile;
   createdAt?: string;
   updatedAt?: string;
 };

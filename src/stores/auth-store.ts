@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { getMeApi, loginApi } from '@/api/auth.api';
+import { getMeApi, loginApi, registerStaffApi } from '@/api/auth.api';
 import { bindAuthHandlers } from '@/api/client';
 import { zustandStorage } from '@/stores/storage';
+import type { RegisterStaffRequest, StaffProfile } from '@/types/staff';
 import type { User } from '@/types/user';
 
 type AuthState = {
@@ -13,8 +14,10 @@ type AuthState = {
   isLoading: boolean;
 
   setSession: (accessToken: string, user: User) => void;
+  mergeStaffProfileInSession: (staffProfile: StaffProfile) => void;
   clearSession: () => void;
   login: (email: string, password: string) => Promise<void>;
+  registerStaff: (body: RegisterStaffRequest) => Promise<void>;
   logout: () => void;
   hydrateSession: () => Promise<void>;
 };
@@ -31,6 +34,14 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken, user });
       },
 
+      mergeStaffProfileInSession: (staffProfile) => {
+        const { user } = get();
+        if (!user) {
+          return;
+        }
+        set({ user: { ...user, staffProfile } });
+      },
+
       clearSession: () => {
         set({ accessToken: null, user: null, isLoading: false });
       },
@@ -39,6 +50,17 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const { accessToken, user } = await loginApi(email, password);
+          set({ accessToken, user, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      registerStaff: async (body) => {
+        set({ isLoading: true });
+        try {
+          const { accessToken, user } = await registerStaffApi(body);
           set({ accessToken, user, isLoading: false });
         } catch (error) {
           set({ isLoading: false });

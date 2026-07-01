@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
 
 import { useTheme } from '@/hooks/use-theme';
+import { resetNavigationTo } from '@/lib/auth-navigation';
 import { selectIsAuthenticated, useAuthStore } from '@/stores/auth-store';
 
 export function AuthHeaderActions() {
@@ -25,7 +26,7 @@ export function AuthHeaderActions() {
         <Pressable
           onPress={() => {
             logout();
-            router.replace('/(tabs)' as Href);
+            resetNavigationTo('/(tabs)' as Href);
           }}
           style={({ pressed }) => [
             styles.button,

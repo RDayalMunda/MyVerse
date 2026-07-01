@@ -6,9 +6,12 @@ Documentation for the MyVerse Expo app (web, iOS, Android).
 
 | Document | Description |
 |----------|-------------|
-| [AUTH.md](./AUTH.md) | Login, logout, session persistence, navigation permissions |
+| [DOCS.md](./DOCS.md) | Documentation conventions and maintenance workflow |
 | [ROADMAP.md](./ROADMAP.md) | Module-wise integration plan and slice status |
-| [SLICE_1.md](./SLICE_1.md) | Admin book pipeline + consumer project detail |
+| [AUTH.md](./AUTH.md) | Login, logout, session persistence, navigation permissions |
+| [PROJECT.md](./PROJECT.md) | Projects — list, detail, admin create, drafts |
+| [STAFF.md](./STAFF.md) | Staff directory, registration, profile management |
+| [MEDIA.md](./MEDIA.md) | Profile image upload |
 
 ## Backend
 
