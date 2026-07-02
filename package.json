@@ -43,7 +43,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:web": "npx expo export --platform web"
+    "build:web": "rm -rf dist && npx expo export --platform web --clear"
   },
   "private": true
 }
