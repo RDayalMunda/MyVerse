@@ -35,6 +35,7 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 type LocalPhoto = PickedImage & {
   id: string;
+  uploaded?: boolean;
 };
 
 function guessMimeType(uri: string): string {
@@ -134,7 +135,13 @@ export function CreatePhotoshootWizard() {
   }
 
   function removePhoto(id: string) {
-    setPhotos((current) => current.filter((photo) => photo.id !== id));
+    setPhotos((current) => {
+      const photo = current.find((entry) => entry.id === id);
+      if (photo?.uploaded) {
+        return current;
+      }
+      return current.filter((entry) => entry.id !== id);
+    });
   }
 
   async function handleNext() {
@@ -194,12 +201,28 @@ export function CreatePhotoshootWizard() {
         setError('Add at least one photo');
         return;
       }
+
+      const pendingPhotos = photos.filter((photo) => !photo.uploaded);
+
+      if (pendingPhotos.length === 0) {
+        setPhotoCount(photos.length);
+        setStep(4);
+        setSubmitAttempted(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
-        for (const photo of photos) {
+        for (const photo of pendingPhotos) {
           const fileMeta = await uploadProjectImage(photo);
           await createImageItemApi(projectId, sectionId, { file: fileMeta });
         }
+        const uploadedIds = new Set(pendingPhotos.map((photo) => photo.id));
+        setPhotos((current) =>
+          current.map((photo) =>
+            uploadedIds.has(photo.id) ? { ...photo, uploaded: true } : photo,
+          ),
+        );
         setPhotoCount(photos.length);
         setStep(4);
         setSubmitAttempted(false);
@@ -410,10 +433,15 @@ export function CreatePhotoshootWizard() {
                 <Image source={{ uri: photo.uri }} style={styles.photoPreview} contentFit="cover" />
                 <Text style={[styles.photoIndex, { color: colors.textSecondary }]}>
                   Photo {index + 1}
+                  {photo.uploaded ? ' · Uploaded' : ''}
                 </Text>
-                <Pressable onPress={() => removePhoto(photo.id)} disabled={isLoading}>
-                  <Text style={[styles.removePhoto, { color: colors.error }]}>Remove</Text>
-                </Pressable>
+                {photo.uploaded ? null : (
+                  <Pressable onPress={() => removePhoto(photo.id)} disabled={isLoading}>
+                    <Text style={[styles.removePhoto, { color: colors.error }]}>
+                      Remove
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             ))}
           </View>

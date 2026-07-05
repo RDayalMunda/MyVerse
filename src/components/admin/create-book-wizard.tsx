@@ -39,6 +39,7 @@ export function CreateBookWizard() {
   const [sectionLabel, setSectionLabel] = useState('');
   const [sectionDescription, setSectionDescription] = useState('');
   const [textContent, setTextContent] = useState('');
+  const [textItemCreated, setTextItemCreated] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   function canProceed(): boolean {
@@ -113,11 +114,19 @@ export function CreateBookWizard() {
         setError(contentError);
         return;
       }
+
+      if (textItemCreated) {
+        setStep(4);
+        setSubmitAttempted(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
         await createTextItemApi(projectId, sectionId, {
           textContent: textContent.trim(),
         });
+        setTextItemCreated(true);
         setStep(4);
         setSubmitAttempted(false);
       } catch (err) {
