@@ -174,6 +174,16 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="profile"
+          options={{
+            headerShown: true,
+            title: 'Profile',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
           name="staff/register"
           options={{
             headerShown: true,

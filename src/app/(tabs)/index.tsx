@@ -32,6 +32,9 @@ export default function ProjectsScreen() {
 
   const listPaddingBottom =
     insets.bottom + (isAdmin ? CREATE_FAB_LIST_PADDING : 16);
+  const subheading = isAdmin
+    ? 'Browse projects and manage drafts from here'
+    : 'Explore the MyVerse universe';
 
   if (isLoading && projects.length === 0) {
     return (
@@ -40,7 +43,7 @@ export default function ProjectsScreen() {
           <View style={styles.header}>
             <Text style={[styles.heading, { color: colors.text }]}>Projects</Text>
             <Text style={[styles.subheading, { color: colors.textSecondary }]}>
-              Explore the MyVerse universe
+              {subheading}
             </Text>
           </View>
           <ProjectCardSkeleton />
@@ -65,7 +68,7 @@ export default function ProjectsScreen() {
           <View style={styles.header}>
             <Text style={[styles.heading, { color: colors.text }]}>Projects</Text>
             <Text style={[styles.subheading, { color: colors.textSecondary }]}>
-              Explore the MyVerse universe
+              {subheading}
             </Text>
             {meta ? (
               <Text style={[styles.count, { color: colors.textSecondary }]}>
@@ -91,7 +94,9 @@ export default function ProjectsScreen() {
             />
           )
         }
-        renderItem={({ item }) => <ProjectCard project={item} />}
+        renderItem={({ item }) => (
+          <ProjectCard project={item} showStatus={isAdmin} />
+        )}
       />
       {isLoading && projects.length > 0 ? (
         <View style={styles.loadingOverlay}>

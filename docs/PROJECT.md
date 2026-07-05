@@ -9,7 +9,7 @@
 ## Overview
 
 - **Consumer:** browse published projects on the Projects tab, tap to open detail.
-- **Admin:** create books and photoshoots via FAB; edit projects/sections/items from project detail **Manage project**; preview drafts on Admin tab; unpublish or delete projects from project detail.
+- **Admin:** create books and photoshoots via FAB; edit projects/sections/items from project detail **Manage project**; see draft status badges on the Projects tab; unpublish or delete projects from project detail.
 - **Permission:** `canManageProjects()` — ADMIN only for create FAB and create routes.
 
 **Visibility:** Admin JWT sees all non-deleted projects and all sections (including drafts). Staff and guests see published projects and published sections only (backend-enforced; frontend sends JWT when logged in).
@@ -68,11 +68,11 @@ Destructive **unpublish/delete project** actions stay on project detail (not dup
 
 ## Admin flow — manage drafts
 
-1. Open **Admin** tab
-2. View all projects (including drafts) with status badges
+1. Open **Projects** tab while signed in as admin
+2. View all projects (including drafts) with status badges on each card
 3. Tap a project to open detail / preview (draft sections visible with badges)
 
-The Admin tab does **not** host the create FAB — creation lives on the Projects tab.
+Creation and management use the **Projects** tab and project detail — there is no separate Admin tab.
 
 ## Admin flow — unpublish and delete
 
@@ -99,7 +99,7 @@ After soft or permanent delete, the app navigates back. After unpublish, the det
    - **Book:** pick section (if multiple) → read text
    - **Photoshoot:** pick section → swipe inline photos → tap for fullscreen gallery
 
-Draft projects are visible to admin in the Admin tab but hidden from the public list until published.
+Draft projects are visible to admins on the Projects tab (status badges) but hidden from guests until published.
 
 ---
 
@@ -157,8 +157,7 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 
 | Route | Purpose |
 |-------|---------|
-| `(tabs)/index` | Public published project list + admin create FAB |
-| `(tabs)/admin` | Admin draft list with status badges |
+| `(tabs)/index` | Project list (published for guests; all non-deleted + status badges for admin) + create FAB |
 | `admin/create-book` | 4-step book wizard |
 | `admin/create-photoshoot` | 4-step photoshoot wizard |
 | `project/[id]` | Reader / gallery detail; admin manage, unpublish, delete |
@@ -209,13 +208,13 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 1. Admin → + FAB → Book → publish → section picker + chapter text
 2. Admin → + FAB → Photoshoot → add 2+ photos → publish → inline swipe + tap for fullscreen
 3. Log out → published book/photoshoot appear → detail works for guests
-4. Draft project: Admin tab only before publish; guest gets 404 or empty on detail
+4. Draft project: visible on Projects tab for admin (status badge); guest gets 404 or empty on detail
 5. Admin preview: draft section badge in section picker; guest does not see draft sections
 6. Photoshoot empty section: “No photos in this session”
 7. Book empty section: “No content in this chapter”
 8. Non-admin: no create FAB; `/admin/create-photoshoot` shows access denied
 9. Admin on published project → Unpublish → confirm → status `UNPUBLISHED`; guest no longer sees it in list
-10. Admin → Delete → soft delete → confirm → navigates back; project gone from Admin tab
+10. Admin → Delete → soft delete → confirm → navigates back; project gone from Projects list
 11. Admin → Delete → Delete permanently → second confirm → navigates back; project irrecoverable
 12. Non-admin on project detail: no Unpublish or Delete buttons
 13. Delete project → back to list → deleted project no longer shown (without pull-to-refresh)

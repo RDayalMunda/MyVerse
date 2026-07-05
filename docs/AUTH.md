@@ -35,9 +35,29 @@ Ephemeral fields (not persisted): `isHydrated`, `isLoading`.
 
 ## Logout flow
 
-1. User taps **Log out** in tab header
-2. Auth store clears `accessToken` and `user`
-3. User remains on public Projects tab (login is optional)
+1. User taps **Log out** in the tab header
+2. A confirmation dialog asks **Are you sure you want to log out?**
+3. On confirm: auth store clears `accessToken` and `user`
+4. User remains on the public Projects tab (login is optional)
+
+## Header (signed in)
+
+The tab header (`src/components/navigation/auth-header.tsx`) shows:
+
+- **Profile photo** when `user.profilePicture` is set
+- **Initials placeholder** otherwise (from display name, or username if no display name)
+- **Display name** and **role** (existing)
+- **Log out** button (with confirmation)
+- Tap **avatar or name** → profile screen (`/profile` for admin/public; staff → own staff profile)
+
+Avatar helper: `src/components/user/user-avatar.tsx` · initials logic: `src/lib/user-display.ts` · route helper: `src/lib/profile-navigation.ts`
+
+## Profile screen
+
+| Role | Header tap destination |
+|------|------------------------|
+| **ADMIN** / **PUBLIC** | `/profile` — display name, photo, username, email |
+| **STAFF** | `/staff/:id` when profile exists, else `/staff/edit` |
 
 ## App launch / persistence
 
@@ -54,7 +74,6 @@ Tabs in `src/app/(tabs)/_layout.tsx`:
 |-----|------------|
 | **Projects** | Always (default home) |
 | **Staff** | Logged-in `ADMIN` or `STAFF` only |
-| **Admin** | Logged-in `ADMIN` only |
 | **Users** | Logged-in `ADMIN` only |
 
 Guests can still self-register as staff via **Log in → Join as staff** (`/staff/register`).
@@ -62,6 +81,27 @@ Guests can still self-register as staff via **Log in → Join as staff** (`/staf
 Direct navigation to `/users` without admin role shows an inline access-denied placeholder.
 
 Permission helpers live in `src/lib/permissions.ts` and mirror backend role rules.
+
+## Key files
+
+| File | Role |
+|------|------|
+| `src/components/navigation/auth-header.tsx` | Login / user badge / logout with confirmation |
+| `src/components/user/user-avatar.tsx` | Profile photo or initials avatar |
+| `src/lib/user-display.ts` | Display name + initials helpers |
+| `src/lib/profile-navigation.ts` | Profile route by role |
+| `src/app/profile.tsx` | Account profile for admin/public users |
+| `src/stores/auth-store.ts` | Session persistence |
+| `src/api/client.ts` | JWT attachment + 401 logout |
+
+## Manual test checklist
+
+1. Guest header shows **Log in** only
+2. Signed-in user with profile photo → avatar image in header
+3. Signed-in user without photo → initials placeholder (e.g. **Admin** → `A`, **John Doe** → `JD`)
+4. **Log out** → confirm dialog → cancel stays signed in
+5. **Log out** → confirm → session cleared, Projects tab remains
+6. Tap header avatar/name → opens profile (admin → `/profile`; staff → staff profile)
 
 ## API client
 
