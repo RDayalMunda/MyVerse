@@ -55,14 +55,15 @@ Hook: `useImageGallery()` — `{ openGallery, galleryProps }`
 | `src/api/media.api.ts` | `uploadProfileImage()`, `uploadProjectImage()` |
 | `src/api/client.ts` | `uploadFormData()` — no Content-Type header |
 | `src/lib/media-url.ts` | `mediaUrl()` helper |
+| `src/lib/upload-image-uri.ts` | Normalize or copy picker URIs before native upload |
 | `src/components/media/profile-image-picker.tsx` | Profile pick, preview, upload |
 | `src/components/media/fullscreen-image-viewer.tsx` | Fullscreen gallery modal + `useImageGallery` |
 | `src/components/admin/create-photoshoot-wizard.tsx` | Multi-photo pick + project upload |
 
-## Cross-platform FormData
+## Cross-platform upload
 
-- **Native:** append `{ uri, name, type }` blob
-- **Web:** append `File` from picker result
+- **Web:** browser `File` via `fetch` + `FormData`
+- **Native:** normalize picker URI when needed, then `expo-file-system` `File.upload()` (multipart) — RN 0.86 does not support legacy `{ uri, name, type }` FormData parts
 
 ## Out of scope (Slice 3)
 

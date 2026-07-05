@@ -177,8 +177,12 @@ export async function uploadFormData<T>(
       headers,
       body: formData,
     });
-  } catch {
-    throw new TypeError('Unable to reach server');
+  } catch (err) {
+    const message =
+      err instanceof Error && err.message
+        ? err.message
+        : 'Unable to reach server';
+    throw new TypeError(message);
   }
 
   const contentType = response.headers.get('content-type') ?? '';
