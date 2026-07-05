@@ -5,6 +5,8 @@ import type {
   Project,
   ProjectDetail,
   ProjectHardDeleteResult,
+  UpdateBookInput,
+  UpdatePhotoshootInput,
 } from '@/types/project';
 
 type ListProjectsParams = {
@@ -56,6 +58,37 @@ export async function createPhotoshootApi(
     method: 'POST',
     body: {
       type: 'PHOTOSHOOT',
+      title: rest.title,
+      description: rest.description,
+      photoshootDetails: hasDetails ? { theme, location } : undefined,
+    },
+  });
+}
+
+export async function updateBookApi(
+  id: string,
+  input: UpdateBookInput,
+): Promise<Project> {
+  return request<Project>(`/projects/${id}`, {
+    method: 'PATCH',
+    body: {
+      title: input.title,
+      description: input.description,
+      bookDetails: input.summary ? { summary: input.summary } : undefined,
+    },
+  });
+}
+
+export async function updatePhotoshootApi(
+  id: string,
+  input: UpdatePhotoshootInput,
+): Promise<Project> {
+  const { theme, location, ...rest } = input;
+  const hasDetails = theme || location;
+
+  return request<Project>(`/projects/${id}`, {
+    method: 'PATCH',
+    body: {
       title: rest.title,
       description: rest.description,
       photoshootDetails: hasDetails ? { theme, location } : undefined,

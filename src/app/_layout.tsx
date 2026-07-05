@@ -84,6 +84,96 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="project/[id]/manage"
+          options={{
+            headerShown: true,
+            title: 'Manage project',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/edit"
+          options={{
+            headerShown: true,
+            title: 'Edit project',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/index"
+          options={{
+            headerShown: true,
+            title: 'Sections',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/create"
+          options={{
+            headerShown: true,
+            title: 'New section',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/[sectionId]/edit"
+          options={{
+            headerShown: true,
+            title: 'Edit section',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/[sectionId]/items/index"
+          options={{
+            headerShown: true,
+            title: 'Section items',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/[sectionId]/items/create"
+          options={{
+            headerShown: true,
+            title: 'Add text item',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/[sectionId]/items/add-photo"
+          options={{
+            headerShown: true,
+            title: 'Add photo',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="project/[id]/sections/[sectionId]/items/[itemId]/edit"
+          options={{
+            headerShown: true,
+            title: 'Edit item',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
           name="staff/register"
           options={{
             headerShown: true,

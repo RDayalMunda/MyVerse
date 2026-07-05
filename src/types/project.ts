@@ -102,6 +102,34 @@ export type CreateImageItemInput = {
   label?: string;
 };
 
+export type UpdateBookInput = {
+  title: string;
+  description?: string;
+  summary?: string;
+};
+
+export type UpdatePhotoshootInput = {
+  title: string;
+  description?: string;
+  theme?: string;
+  location?: string;
+};
+
+export type UpdateSectionInput = {
+  label: string;
+  description?: string;
+};
+
+export type UpdateTextItemInput = {
+  textContent: string;
+  label?: string;
+};
+
+export type UpdateImageItemInput = {
+  label?: string;
+  file?: FileMeta;
+};
+
 export type ProjectsListResponse = {
   data: Project[];
   meta: {

@@ -9,7 +9,7 @@
 ## Overview
 
 - **Consumer:** browse published projects on the Projects tab, tap to open detail.
-- **Admin:** create books and photoshoots via FAB on Projects tab; preview drafts on Admin tab; unpublish or delete projects from project detail.
+- **Admin:** create books and photoshoots via FAB; edit projects/sections/items from project detail **Manage project**; preview drafts on Admin tab; unpublish or delete projects from project detail.
 - **Permission:** `canManageProjects()` — ADMIN only for create FAB and create routes.
 
 **Visibility:** Admin JWT sees all non-deleted projects and all sections (including drafts). Staff and guests see published projects and published sections only (backend-enforced; frontend sends JWT when logged in).
@@ -52,6 +52,19 @@ Project detail uses a **section selector** — like picking a season on a stream
    - **Photos** — pick one or more images; each upload becomes an IMAGE section item
    - **Publish** — review → publish section → publish project
 4. Land on project detail (gallery viewer)
+
+## Admin flow — manage existing project
+
+1. Open **project detail** as admin → tap **Manage project**
+2. On the manage hub (`/project/[id]/manage`):
+   - **Edit project details** — title, description, book summary or photoshoot theme/location
+   - **Manage sections** — list, reorder, add, edit, publish/unpublish, delete
+   - **Publish project** — when status is `DRAFT` or `UNPUBLISHED`
+3. From **Edit section** → **Manage items**:
+   - **Book:** add/edit/delete TEXT items, reorder
+   - **Photoshoot:** add/replace/delete IMAGE items, reorder (max 120 photos per section)
+
+Destructive **unpublish/delete project** actions stay on project detail (not duplicated on the manage hub).
 
 ## Admin flow — manage drafts
 
@@ -113,6 +126,23 @@ POST /projects/:id/publish
 
 **Publish order:** section first, then project (two-level publish).
 
+## API sequence (admin edit)
+
+```
+PATCH /projects/:id                         — update title, description, type extension
+POST  /projects/:id/sections                — create section
+PATCH /projects/:id/sections/:sid           — update section label/description
+PATCH /projects/:id/sections/reorder        — { sectionIds: [...] }
+POST  /projects/:id/sections/:sid/publish
+POST  /projects/:id/sections/:sid/unpublish
+DELETE /projects/:id/sections/:sid
+POST  /projects/:id/sections/:sid/items     — TEXT or IMAGE create
+PATCH /projects/:id/sections/:sid/items/:iid — update text, label, or replace image
+PATCH /projects/:id/sections/:sid/items/reorder — { itemIds: [...] }
+DELETE /projects/:id/sections/:sid/items/:iid
+POST  /media/upload/image                   — before IMAGE create or replace
+```
+
 ## API sequence (admin lifecycle)
 
 ```
@@ -131,7 +161,16 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 | `(tabs)/admin` | Admin draft list with status badges |
 | `admin/create-book` | 4-step book wizard |
 | `admin/create-photoshoot` | 4-step photoshoot wizard |
-| `project/[id]` | Reader / gallery detail with section picker; admin unpublish + delete |
+| `project/[id]` | Reader / gallery detail; admin manage, unpublish, delete |
+| `project/[id]/manage` | Admin manage hub |
+| `project/[id]/edit` | Edit project metadata |
+| `project/[id]/sections` | Section list + reorder + add |
+| `project/[id]/sections/create` | New section form |
+| `project/[id]/sections/[sectionId]/edit` | Edit section + publish lifecycle |
+| `project/[id]/sections/[sectionId]/items` | Item list + reorder + add |
+| `project/[id]/sections/[sectionId]/items/create` | Add TEXT item (book) |
+| `project/[id]/sections/[sectionId]/items/add-photo` | Add IMAGE items (photoshoot) |
+| `project/[id]/sections/[sectionId]/items/[itemId]/edit` | Edit TEXT or IMAGE item |
 
 ## Key files
 
@@ -151,10 +190,19 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 | `src/hooks/use-projects.ts` | Project list |
 | `src/hooks/use-stale-list-refetch.ts` | Silent refetch when list marked stale on focus |
 | `src/stores/list-invalidation-store.ts` | Stale flags after mutations |
-| `src/hooks/use-project.ts` | Single project detail |
+| `src/components/admin/project-book-fields.tsx` | Shared book project form fields |
+| `src/components/admin/project-photoshoot-fields.tsx` | Shared photoshoot project form fields |
+| `src/components/admin/section-fields.tsx` | Section label + description fields |
+| `src/components/admin/text-item-fields.tsx` | TEXT item form fields |
+| `src/components/admin/photoshoot-item-picker.tsx` | Image picker for photoshoot items |
+| `src/components/admin/project-admin-gate.tsx` | Admin permission gate for manage routes |
+| `src/hooks/use-project-on-focus.ts` | Project detail + refetch on screen focus |
+| `src/hooks/use-project.ts` | Single project detail fetch |
 | `src/hooks/use-selected-section.ts` | Selected section state |
 | `src/lib/permissions.ts` | `canManageProjects()` |
-| `src/api/projects.api.ts` | List, get, create, publish, unpublish, delete |
+| `src/api/projects.api.ts` | List, get, create, update, publish, unpublish, delete |
+| `src/api/sections.api.ts` | Section create, update, delete, reorder, publish, unpublish |
+| `src/api/section-items.api.ts` | Item create, update, delete, reorder |
 
 ## Manual test checklist
 
@@ -172,6 +220,10 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 12. Non-admin on project detail: no Unpublish or Delete buttons
 13. Delete project → back to list → deleted project no longer shown (without pull-to-refresh)
 14. Create/publish project → back to list → new project appears
+15. Admin → Manage project → edit book title/summary → detail header updates
+16. Admin → Manage sections → add section → publish section on live project
+17. Admin → Manage items → add second TEXT block (book) or photo (photoshoot) → reorder → delete
+18. Non-admin: `/project/[id]/manage` shows access denied
 
 ## Prerequisites
 
