@@ -13,6 +13,7 @@
 | [PROJECT.md](./PROJECT.md) | Projects module |
 | [STAFF.md](./STAFF.md) | Staff module |
 | [MEDIA.md](./MEDIA.md) | Media upload module |
+| [BUILD_ANDROID.md](./BUILD_ANDROID.md) | Local Android release APK build |
 
 Add new module docs as features land (e.g. `USERS.md` for Slice 5).
 

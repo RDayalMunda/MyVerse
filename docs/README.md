@@ -12,6 +12,7 @@ Documentation for the MyVerse Expo app (web, iOS, Android).
 | [PROJECT.md](./PROJECT.md) | Projects — list, detail, admin create, drafts |
 | [STAFF.md](./STAFF.md) | Staff directory, registration, profile management |
 | [MEDIA.md](./MEDIA.md) | Profile image upload |
+| [BUILD_ANDROID.md](./BUILD_ANDROID.md) | Local release APK build (Android) |
 
 ## Backend
 
@@ -44,3 +45,12 @@ The app rewrites `localhost` automatically for native dev:
 | Physical device (Expo Go) | Your machine's LAN IP (from Metro, e.g. `192.168.x.x`) |
 
 Android emulator manual override: `http://10.0.2.2:3000/api/v1`
+
+## Release APK (Android)
+
+**First time?** Read [BUILD_ANDROID.md](./BUILD_ANDROID.md) — steps 1–5 (JDK, Android SDK, keystore, `.env.production`) **before** `npm run build:apk:setup`.
+
+```bash
+npm run build:apk:setup   # step 6 — save machine paths
+npm run build:apk         # step 7 — build → dist/myverse-*.apk
+```

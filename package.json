@@ -39,11 +39,13 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:web": "rm -rf dist && npx expo export --platform web --clear"
+    "build:web": "rm -rf dist && npx expo export --platform web --clear",
+    "build:apk": "node scripts/build-android.mjs",
+    "build:apk:setup": "node scripts/build-android.mjs --setup"
   },
   "private": true
 }
