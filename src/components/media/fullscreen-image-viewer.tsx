@@ -36,6 +36,9 @@ export function FullscreenImageViewer({
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<GalleryImage>>(null);
   const [pageWidth, setPageWidth] = useState(Dimensions.get('window').width);
+  const [pageHeight, setPageHeight] = useState(
+    () => Dimensions.get('window').height * 0.7,
+  );
   const [activeIndex, setActiveIndex] = useState(initialIndex);
 
   useEffect(() => {
@@ -70,10 +73,10 @@ export function FullscreenImageViewer({
 
   function renderItem({ item }: ListRenderItemInfo<GalleryImage>) {
     return (
-      <View style={[styles.page, { width: pageWidth }]}>
+      <View style={[styles.page, { width: pageWidth, height: pageHeight }]}>
         <Image
           source={{ uri: item.uri }}
-          style={styles.image}
+          style={{ width: pageWidth, height: pageHeight }}
           contentFit="contain"
           transition={200}
         />
@@ -126,32 +129,43 @@ export function FullscreenImageViewer({
         </View>
 
         {images.length > 0 ? (
-          <FlatList
-            ref={listRef}
-            style={styles.list}
-            data={images}
-            keyExtractor={(item, index) => `${item.uri}-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            renderItem={renderItem}
-            getItemLayout={(_, index) => ({
-              length: pageWidth,
-              offset: pageWidth * index,
-              index,
-            })}
-            onScrollToIndexFailed={(info) => {
-              requestAnimationFrame(() => {
-                listRef.current?.scrollToOffset({
-                  offset: info.averageItemLength * info.index,
-                  animated: false,
-                });
-              });
+          <View
+            style={styles.listWrap}
+            onLayout={(event) => {
+              const height = event.nativeEvent.layout.height;
+              if (height > 0) {
+                setPageHeight(height);
+              }
             }}
-          />
+          >
+            <FlatList
+              ref={listRef}
+              style={[styles.list, { height: pageHeight }]}
+              data={images}
+              extraData={{ pageWidth, pageHeight }}
+              keyExtractor={(item, index) => `${item.uri}-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="fast"
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              renderItem={renderItem}
+              getItemLayout={(_, index) => ({
+                length: pageWidth,
+                offset: pageWidth * index,
+                index,
+              })}
+              onScrollToIndexFailed={(info) => {
+                requestAnimationFrame(() => {
+                  listRef.current?.scrollToOffset({
+                    offset: info.averageItemLength * info.index,
+                    animated: false,
+                  });
+                });
+              }}
+            />
+          </View>
         ) : null}
 
         {images.length > 1 ? (
@@ -234,6 +248,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.95)',
   },
+  listWrap: {
+    flex: 1,
+  },
   list: {
     flex: 1,
   },
@@ -258,13 +275,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   page: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
   },
   navButton: {
     position: 'absolute',
