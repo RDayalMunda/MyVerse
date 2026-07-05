@@ -9,6 +9,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookSectionContent } from '@/components/projects/book-section-content';
+import { ProjectAdminActions } from '@/components/projects/project-admin-actions';
 import { EmptyState } from '@/components/projects/project-card';
 import { ProjectDetailHeader } from '@/components/projects/project-detail-header';
 import { PhotoshootSectionContent } from '@/components/projects/photoshoot-section-content';
@@ -58,6 +59,10 @@ export default function ProjectDetailScreen() {
       ]}
     >
       <ProjectDetailHeader project={project} />
+
+      {isAdmin ? (
+        <ProjectAdminActions project={project} onUnpublished={refetch} />
+      ) : null}
 
       {sections.length > 0 ? (
         <SectionPicker

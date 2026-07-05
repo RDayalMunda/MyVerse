@@ -32,6 +32,7 @@ import {
 } from '@/lib/permissions';
 import { genderLabel } from '@/lib/staff-validation';
 import { mediaUrl } from '@/lib/media-url';
+import { invalidateStaffList } from '@/stores/list-invalidation-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { getErrorMessage } from '@/types/api';
 
@@ -100,6 +101,7 @@ export default function StaffDetailScreen() {
                 } else {
                   await activateUserApi(targetUser.id);
                 }
+                invalidateStaffList();
                 refetch();
               } catch (err) {
                 Alert.alert('Error', getErrorMessage(err));

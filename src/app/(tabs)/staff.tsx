@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/projects/project-card';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
 import { CREATE_FAB_LIST_PADDING } from '@/components/ui/create-fab';
 import { useStaffList } from '@/hooks/use-staff-list';
+import { useStaleListRefetch } from '@/hooks/use-stale-list-refetch';
 import { useTheme } from '@/hooks/use-theme';
 import {
   canReadStaff,
@@ -32,6 +33,8 @@ export default function StaffScreen() {
   const showFab = shouldShowStaffCreateFab(user);
   const isStaff = canUpdateOwnStaffProfile(user?.role);
   const { staff, meta, isLoading, error, refetch } = useStaffList();
+
+  useStaleListRefetch('staff', refetch);
 
   const listPaddingBottom =
     insets.bottom + (showFab ? CREATE_FAB_LIST_PADDING : 16);

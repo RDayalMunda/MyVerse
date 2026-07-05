@@ -12,7 +12,7 @@ Module-wise integration plan aligned with [My-Verse-Backend Postman](../My-Verse
 | **3** | Show + video upload + VIDEO items | Planned |
 | **4** | Staff CRUD: read, self-register, admin create, self-edit, deactivate | Done |
 | **5** | Users admin CRUD | Planned |
-| **6** | Unpublish, edit, reorder, visibility/NSFW UI | Planned |
+| **6** | Unpublish, edit, reorder, visibility/NSFW UI | Partial — unpublish + delete on project detail |
 
 ## Postman module checklist
 
@@ -23,7 +23,7 @@ Module-wise integration plan aligned with [My-Verse-Backend Postman](../My-Verse
 | Users | - | Create staff, update, activate/deactivate | Partial (staff admin flows) |
 | Staff | List + detail | Self-register, admin create, self-edit | Done — [STAFF.md](./STAFF.md) |
 | Media | - | Profile + project image upload | Done — [MEDIA.md](./MEDIA.md) |
-| Projects | List + detail | Create book/photoshoot, publish | Done — [PROJECT.md](./PROJECT.md) |
+| Projects | List + detail | Create book/photoshoot, publish, unpublish, delete | Partial — [PROJECT.md](./PROJECT.md) |
 | Sections | Detail | Create, publish | Done |
 | Section Items | Detail | TEXT + IMAGE create | Done |
 

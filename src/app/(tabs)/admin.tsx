@@ -15,6 +15,7 @@ import {
 } from '@/components/projects/project-card';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
 import { useProjects } from '@/hooks/use-projects';
+import { useStaleListRefetch } from '@/hooks/use-stale-list-refetch';
 import { useTheme } from '@/hooks/use-theme';
 import { canManageProjects } from '@/lib/permissions';
 import { useAuthStore } from '@/stores/auth-store';
@@ -24,6 +25,8 @@ export default function AdminScreen() {
   const { colors } = useTheme();
   const user = useAuthStore((state) => state.user);
   const { projects, isLoading, error, refetch } = useProjects();
+
+  useStaleListRefetch('projects', refetch);
 
   if (!canManageProjects(user?.role)) {
     return (

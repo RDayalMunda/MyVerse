@@ -4,6 +4,7 @@ import type {
   CreatePhotoshootInput,
   Project,
   ProjectDetail,
+  ProjectHardDeleteResult,
 } from '@/types/project';
 
 type ListProjectsParams = {
@@ -65,5 +66,25 @@ export async function createPhotoshootApi(
 export async function publishProjectApi(id: string): Promise<Project> {
   return request<Project>(`/projects/${id}/publish`, {
     method: 'POST',
+  });
+}
+
+export async function unpublishProjectApi(id: string): Promise<Project> {
+  return request<Project>(`/projects/${id}/unpublish`, {
+    method: 'POST',
+  });
+}
+
+export async function deleteProjectApi(id: string): Promise<Project> {
+  return request<Project>(`/projects/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function permanentDeleteProjectApi(
+  id: string,
+): Promise<ProjectHardDeleteResult> {
+  return request<ProjectHardDeleteResult>(`/projects/${id}/permanent`, {
+    method: 'DELETE',
   });
 }

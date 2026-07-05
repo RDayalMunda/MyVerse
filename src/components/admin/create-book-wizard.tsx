@@ -15,6 +15,7 @@ import { createSectionApi, publishSectionApi } from '@/api/sections.api';
 import { createBookApi, publishProjectApi } from '@/api/projects.api';
 import { useTheme } from '@/hooks/use-theme';
 import { FIELD_HINTS, validateRequiredText } from '@/lib/form-validation';
+import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 
 type WizardStep = 1 | 2 | 3 | 4;
@@ -132,6 +133,7 @@ export function CreateBookWizard() {
       try {
         await publishSectionApi(projectId, sectionId);
         await publishProjectApi(projectId);
+        invalidateProjectsList();
         router.replace(`/project/${projectId}` as Href);
       } catch (err) {
         setError(getErrorMessage(err));

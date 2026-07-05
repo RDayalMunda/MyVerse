@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { listProjectsApi } from '@/api/projects.api';
 import { getErrorMessage } from '@/types/api';
@@ -10,7 +10,7 @@ type UseProjectsResult = {
   meta: PaginatedMeta | null;
   isLoading: boolean;
   error: string | null;
-  refetch: () => void;
+  refetch: (silent?: boolean) => void;
 };
 
 export function useProjects(): UseProjectsResult {
@@ -19,16 +19,21 @@ export function useProjects(): UseProjectsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const silentRef = useRef(false);
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback((silent = false) => {
+    silentRef.current = silent;
     setReloadKey((key) => key + 1);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    const silent = silentRef.current;
 
     async function load() {
-      setIsLoading(true);
+      if (!silent) {
+        setIsLoading(true);
+      }
       setError(null);
 
       try {
@@ -44,6 +49,7 @@ export function useProjects(): UseProjectsResult {
       } finally {
         if (!cancelled) {
           setIsLoading(false);
+          silentRef.current = false;
         }
       }
     }

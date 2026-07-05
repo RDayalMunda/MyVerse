@@ -9,7 +9,7 @@
 ## Overview
 
 - **Consumer:** browse published projects on the Projects tab, tap to open detail.
-- **Admin:** create books and photoshoots via FAB on Projects tab; preview drafts on Admin tab.
+- **Admin:** create books and photoshoots via FAB on Projects tab; preview drafts on Admin tab; unpublish or delete projects from project detail.
 - **Permission:** `canManageProjects()` — ADMIN only for create FAB and create routes.
 
 **Visibility:** Admin JWT sees all non-deleted projects and all sections (including drafts). Staff and guests see published projects and published sections only (backend-enforced; frontend sends JWT when logged in).
@@ -61,6 +61,23 @@ Project detail uses a **section selector** — like picking a season on a stream
 
 The Admin tab does **not** host the create FAB — creation lives on the Projects tab.
 
+## Admin flow — unpublish and delete
+
+On **project detail** (`/project/[id]`), admins see two separate actions below the header:
+
+| Action | When shown | API | Confirmation |
+|--------|------------|-----|----------------|
+| **Unpublish project** | `status === PUBLISHED` | `POST /projects/:id/unpublish` | Confirm dialog: hides from public catalog; sections keep statuses |
+| **Delete project** | `status !== DELETED` | `DELETE /projects/:id` (soft) or `DELETE /projects/:id/permanent` | Confirm dialog with **Delete** (soft) and **Delete permanently** (second confirm) |
+
+- **Unpublish** — sets `UNPUBLISHED`; content stays in the database; public list hides the project.
+- **Soft delete** — sets `DELETED`; removed from normal admin/public lists; sections, items, and media remain.
+- **Permanent delete** — irreversible; removes project tree and unreferenced media (see backend [CONTENT_CREATION_GUIDE](../My-Verse-Backend/docs/CONTENT_CREATION_GUIDE.md)).
+
+After soft or permanent delete, the app navigates back. After unpublish, the detail screen refreshes and shows the updated status badge.
+
+**List refresh:** Mutations call `invalidateProjectsList()`; project list tabs refetch silently when they regain focus (no refetch on browser tab switch or app resume unless data changed). See `stores/list-invalidation-store.ts` and `hooks/use-stale-list-refetch.ts`.
+
 ## Consumer flow
 
 1. Open **Projects** tab (guest or logged in)
@@ -96,6 +113,14 @@ POST /projects/:id/publish
 
 **Publish order:** section first, then project (two-level publish).
 
+## API sequence (admin lifecycle)
+
+```
+POST /projects/:id/unpublish          — hide from public (PUBLISHED → UNPUBLISHED)
+DELETE /projects/:id                  — soft delete (status → DELETED)
+DELETE /projects/:id/permanent        — irreversible remove project + content
+```
+
 ---
 
 ## Frontend routes
@@ -106,7 +131,7 @@ POST /projects/:id/publish
 | `(tabs)/admin` | Admin draft list with status badges |
 | `admin/create-book` | 4-step book wizard |
 | `admin/create-photoshoot` | 4-step photoshoot wizard |
-| `project/[id]` | Reader / gallery detail with section picker |
+| `project/[id]` | Reader / gallery detail with section picker; admin unpublish + delete |
 
 ## Key files
 
@@ -119,12 +144,17 @@ POST /projects/:id/publish
 | `src/components/admin/create-book-wizard.tsx` | Book create wizard |
 | `src/components/admin/create-photoshoot-wizard.tsx` | Photoshoot create wizard |
 | `src/components/projects/project-detail-header.tsx` | Title, type, book/photoshoot meta |
+| `src/components/projects/project-admin-actions.tsx` | Admin unpublish + delete with confirmations |
+| `src/components/ui/confirm-dialog.tsx` | Cross-platform confirm modal (web + native) |
 | `src/components/projects/book-section-content.tsx` | Vertical TEXT for selected section |
 | `src/components/projects/photoshoot-section-content.tsx` | Horizontal IMAGE pager + tap → fullscreen |
 | `src/hooks/use-projects.ts` | Project list |
+| `src/hooks/use-stale-list-refetch.ts` | Silent refetch when list marked stale on focus |
+| `src/stores/list-invalidation-store.ts` | Stale flags after mutations |
 | `src/hooks/use-project.ts` | Single project detail |
 | `src/hooks/use-selected-section.ts` | Selected section state |
 | `src/lib/permissions.ts` | `canManageProjects()` |
+| `src/api/projects.api.ts` | List, get, create, publish, unpublish, delete |
 
 ## Manual test checklist
 
@@ -136,6 +166,12 @@ POST /projects/:id/publish
 6. Photoshoot empty section: “No photos in this session”
 7. Book empty section: “No content in this chapter”
 8. Non-admin: no create FAB; `/admin/create-photoshoot` shows access denied
+9. Admin on published project → Unpublish → confirm → status `UNPUBLISHED`; guest no longer sees it in list
+10. Admin → Delete → soft delete → confirm → navigates back; project gone from Admin tab
+11. Admin → Delete → Delete permanently → second confirm → navigates back; project irrecoverable
+12. Non-admin on project detail: no Unpublish or Delete buttons
+13. Delete project → back to list → deleted project no longer shown (without pull-to-refresh)
+14. Create/publish project → back to list → new project appears
 
 ## Prerequisites
 

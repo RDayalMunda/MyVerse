@@ -111,3 +111,11 @@ export type ProjectsListResponse = {
     totalPages: number;
   };
 };
+
+export type ProjectHardDeleteResult = {
+  projectId: string;
+  sectionsRemoved: number;
+  sectionItemsRemoved: number;
+  imagesRemoved: number;
+  videosRemoved: number;
+};

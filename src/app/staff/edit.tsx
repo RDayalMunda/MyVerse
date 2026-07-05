@@ -19,6 +19,7 @@ import {
 } from '@/components/staff/staff-profile-fields';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
 import { useTheme } from '@/hooks/use-theme';
+import { invalidateStaffList } from '@/stores/list-invalidation-store';
 import { toApiDateValue, toDateInputValue } from '@/lib/date-format';
 import { canUpdateOwnStaffProfile } from '@/lib/permissions';
 import { validateStaffProfileBody } from '@/lib/staff-validation';
@@ -143,6 +144,7 @@ export default function StaffEditScreen() {
         }
       }
 
+      invalidateStaffList();
       router.replace(`/staff/${updatedProfile.id}` as Href);
     } catch (err) {
       setError(getErrorMessage(err));

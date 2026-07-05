@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { listStaffApi } from '@/api/staff.api';
 import { canReadStaff } from '@/lib/permissions';
@@ -11,7 +11,7 @@ type UseStaffListResult = {
   meta: PaginatedMeta | null;
   isLoading: boolean;
   error: string | null;
-  refetch: () => void;
+  refetch: (silent?: boolean) => void;
 };
 
 export function useStaffList(): UseStaffListResult {
@@ -25,8 +25,10 @@ export function useStaffList(): UseStaffListResult {
   const [isLoading, setIsLoading] = useState(canLoad);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const silentRef = useRef(false);
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback((silent = false) => {
+    silentRef.current = silent;
     setReloadKey((key) => key + 1);
   }, []);
 
@@ -40,9 +42,12 @@ export function useStaffList(): UseStaffListResult {
     }
 
     let cancelled = false;
+    const silent = silentRef.current;
 
     async function load() {
-      setIsLoading(true);
+      if (!silent) {
+        setIsLoading(true);
+      }
       setError(null);
 
       try {
@@ -58,6 +63,7 @@ export function useStaffList(): UseStaffListResult {
       } finally {
         if (!cancelled) {
           setIsLoading(false);
+          silentRef.current = false;
         }
       }
     }

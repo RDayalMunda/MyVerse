@@ -16,6 +16,7 @@ import {
 import { ProjectCreateFab } from '@/components/projects/project-create-fab';
 import { CREATE_FAB_LIST_PADDING } from '@/components/ui/create-fab';
 import { useProjects } from '@/hooks/use-projects';
+import { useStaleListRefetch } from '@/hooks/use-stale-list-refetch';
 import { useTheme } from '@/hooks/use-theme';
 import { canManageProjects } from '@/lib/permissions';
 import { useAuthStore } from '@/stores/auth-store';
@@ -26,6 +27,8 @@ export default function ProjectsScreen() {
   const user = useAuthStore((state) => state.user);
   const isAdmin = canManageProjects(user?.role);
   const { projects, meta, isLoading, error, refetch } = useProjects();
+
+  useStaleListRefetch('projects', refetch);
 
   const listPaddingBottom =
     insets.bottom + (isAdmin ? CREATE_FAB_LIST_PADDING : 16);

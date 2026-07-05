@@ -18,6 +18,7 @@ import {
 } from '@/components/staff/staff-profile-fields';
 import { FormFieldWrap } from '@/components/ui/form-field';
 import { useTheme } from '@/hooks/use-theme';
+import { invalidateStaffList } from '@/stores/list-invalidation-store';
 import { resetNavigationTo } from '@/lib/auth-navigation';
 import { toApiDateValue } from '@/lib/date-format';
 import {
@@ -123,6 +124,7 @@ export function StaffAdminCreateWizard() {
           dateOfBirth: toApiDateValue(profile.dateOfBirth),
         },
       });
+      invalidateStaffList();
       resetNavigationTo('/(tabs)/staff' as Href);
     } catch (err) {
       setError(getErrorMessage(err));
