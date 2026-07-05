@@ -2,6 +2,10 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
 
+import {
+  FullscreenImageViewer,
+  useImageGallery,
+} from '@/components/media/fullscreen-image-viewer';
 import { useTheme } from '@/hooks/use-theme';
 import { mediaUrl } from '@/lib/media-url';
 import type { StaffListItem } from '@/types/staff';
@@ -14,8 +18,16 @@ type StaffCardProps = {
 export function StaffCard({ staff, onPress }: StaffCardProps) {
   const { colors } = useTheme();
   const router = useRouter();
+  const { openGallery, galleryProps } = useImageGallery();
   const avatarUri = mediaUrl(staff.user?.profilePicture?.url);
   const displayName = staff.stageName ?? staff.user?.displayName ?? 'Staff member';
+
+  function handleAvatarPress() {
+    if (!avatarUri) {
+      return;
+    }
+    openGallery([{ uri: avatarUri, label: displayName }]);
+  }
 
   function handlePress() {
     if (onPress) {
@@ -26,43 +38,52 @@ export function StaffCard({ staff, onPress }: StaffCardProps) {
   }
 
   return (
-    <Pressable
-      onPress={handlePress}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
-    >
-      {avatarUri ? (
-        <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
-      ) : (
-        <View style={[styles.avatarPlaceholder, { backgroundColor: colors.background }]}>
-          <Text style={[styles.avatarInitial, { color: colors.tint }]}>
-            {displayName.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-      )}
-      <View style={styles.content}>
-        <Text style={[styles.name, { color: colors.text }]}>{displayName}</Text>
-        {staff.location ? (
-          <Text style={[styles.location, { color: colors.textSecondary }]}>
-            {staff.location}
-          </Text>
-        ) : null}
-        {staff.bio ? (
-          <Text
-            style={[styles.bio, { color: colors.textSecondary }]}
-            numberOfLines={2}
+    <>
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            opacity: pressed ? 0.85 : 1,
+          },
+        ]}
+      >
+        {avatarUri ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="View profile photo"
+            onPress={handleAvatarPress}
           >
-            {staff.bio}
-          </Text>
-        ) : null}
-      </View>
-    </Pressable>
+            <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
+          </Pressable>
+        ) : (
+          <View style={[styles.avatarPlaceholder, { backgroundColor: colors.background }]}>
+            <Text style={[styles.avatarInitial, { color: colors.tint }]}>
+              {displayName.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
+        <View style={styles.content}>
+          <Text style={[styles.name, { color: colors.text }]}>{displayName}</Text>
+          {staff.location ? (
+            <Text style={[styles.location, { color: colors.textSecondary }]}>
+              {staff.location}
+            </Text>
+          ) : null}
+          {staff.bio ? (
+            <Text
+              style={[styles.bio, { color: colors.textSecondary }]}
+              numberOfLines={2}
+            >
+              {staff.bio}
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
+      <FullscreenImageViewer {...galleryProps} />
+    </>
   );
 }
 

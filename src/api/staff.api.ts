@@ -16,9 +16,7 @@ export async function listStaffApi(
   const query = search.toString();
   const path = query ? `/staff?${query}` : '/staff';
 
-  const { data, meta } = await requestWithMeta<StaffListItem[]>(path, {
-    token: null,
-  });
+  const { data, meta } = await requestWithMeta<StaffListItem[]>(path);
 
   return {
     staff: data,
@@ -27,7 +25,7 @@ export async function listStaffApi(
 }
 
 export async function getStaffApi(id: string): Promise<StaffListItem> {
-  return request<StaffListItem>(`/staff/${id}`, { token: null });
+  return request<StaffListItem>(`/staff/${id}`);
 }
 
 export async function updateMyStaffProfileApi(

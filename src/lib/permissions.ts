@@ -1,7 +1,7 @@
 import type { User, UserRole } from '@/types/user';
 
-export function canReadStaff(_role?: UserRole | null): boolean {
-  return true;
+export function canReadStaff(role?: UserRole | null): boolean {
+  return role === 'ADMIN' || role === 'STAFF';
 }
 
 /** Guest-only: self-register creates a new account. */

@@ -12,7 +12,7 @@ Staff CRUD spans several backend resources — not a single `/staff` CRUD API:
 
 | Operation | Who | API |
 |-----------|-----|-----|
-| List / detail | Public | `GET /staff`, `GET /staff/:id` |
+| List / detail | ADMIN, STAFF (JWT required) | `GET /staff`, `GET /staff/:id` |
 | Self-register | Guest | `POST /auth/register/staff` |
 | Admin create | ADMIN | `POST /users` (role STAFF) |
 | Edit profile body | STAFF (own) | `PATCH /staff/me` |
@@ -26,13 +26,21 @@ Staff CRUD spans several backend resources — not a single `/staff` CRUD API:
 
 Only **complete** profiles (`isProfileComplete: true`) appear in `GET /staff`.
 
+**Frontend auth:** `listStaffApi` and `getStaffApi` attach the session JWT automatically (do not pass `token: null`). Unauthenticated requests receive "Invalid or missing token" from the backend.
+
+---
+
+## Profile photo preview
+
+Tap a staff avatar on the **directory card** or **profile detail** hero to open the fullscreen image viewer (swipe not applicable for single photo; close with X).
+
 ---
 
 ## Create flows
 
 ### Self-register (public)
 
-1. Staff tab → **+** FAB → **Join as staff** (or empty-list link)
+1. Open **Log in** → **Join as staff** (or navigate to `/staff/register`)
 2. 4-step wizard at `/staff/register`:
    - Account — email, username, password, displayName
    - Photo — `POST /media/upload` (required)
@@ -93,8 +101,8 @@ Client validation: `src/lib/staff-validation.ts`
 
 | Route | Purpose |
 |-------|---------|
-| `(tabs)/staff` | Paginated directory + StaffCreateFab |
-| `staff/[id]` | Public profile detail |
+| `(tabs)/staff` | Paginated directory (ADMIN/STAFF JWT) + StaffCreateFab |
+| `staff/[id]` | Profile detail (ADMIN/STAFF JWT) |
 | `staff/register` | Self-register wizard |
 | `staff/create` | Admin create wizard |
 | `staff/edit` | Staff self-edit |
@@ -104,7 +112,7 @@ Client validation: `src/lib/staff-validation.ts`
 
 | File | Role |
 |------|------|
-| `src/api/staff.api.ts` | List, get, PATCH /staff/me |
+| `src/api/staff.api.ts` | List, get (JWT), PATCH /staff/me |
 | `src/api/users.api.ts` | Admin create, update, activate/deactivate |
 | `src/api/auth.api.ts` | registerStaffApi |
 | `src/components/staff/staff-create-fab.tsx` | FAB on Staff tab |
@@ -115,14 +123,17 @@ Client validation: `src/lib/staff-validation.ts`
 | `src/lib/date-format.ts` | ISO ↔ form date normalization |
 | `src/components/staff/staff-register-wizard.tsx` | Public register |
 | `src/components/staff/staff-admin-create-wizard.tsx` | Admin create |
+| `src/components/staff/staff-card.tsx` | Directory card; avatar tap → fullscreen viewer |
+| `src/app/staff/[id].tsx` | Detail; hero avatar tap → fullscreen viewer |
 | `src/lib/permissions.ts` | Role helpers |
+| `src/components/media/fullscreen-image-viewer.tsx` | Shared fullscreen gallery modal |
 
 ## Permissions matrix
 
 | Action | Guest | PUBLIC | STAFF | ADMIN |
 |--------|-------|--------|-------|-------|
-| View directory / detail | Yes | Yes | Yes | Yes |
-| Join as staff | Yes | Yes | — | Yes |
+| View directory / detail | — | — | Yes | Yes |
+| Join as staff | Yes | — | — | Yes |
 | Create staff (admin) | — | — | — | Yes |
 | Edit own profile | — | — | Yes | — |
 | Edit account / deactivate | — | — | — | Yes |
@@ -131,13 +142,15 @@ Client validation: `src/lib/staff-validation.ts`
 
 ## Manual test checklist
 
-1. Staff tab lists complete profiles; detail shows avatar + fields
-2. Upload profile photo on web + native; image renders via `mediaUrl()`
-3. Guest completes register wizard → logged in as STAFF
-4. Admin creates staff via FAB → appears in directory when profile complete
-5. Staff updates bio via Edit profile → full-page save loader → lands on detail with fresh chips and date of birth
-6. Admin deactivates staff → login blocked; activate restores access
-7. Non-admin cannot open `/staff/create`; non-staff cannot open `/staff/edit`
+1. Login as ADMIN or STAFF → Staff tab loads list; detail opens without token errors
+2. Staff tab lists complete profiles; tap avatar on card or detail for fullscreen photo
+3. Upload profile photo on web + native; image renders via `mediaUrl()`
+4. Guest completes register wizard → logged in as STAFF
+5. Admin creates staff via FAB → appears in directory when profile complete
+6. Staff updates bio via Edit profile → full-page save loader → lands on detail with fresh chips and date of birth
+7. Admin deactivates staff → login blocked; activate restores access
+8. Non-admin cannot open `/staff/create`; non-staff cannot open `/staff/edit`
+9. Guest / logged-out user does not see Staff tab
 
 ## Prerequisites
 

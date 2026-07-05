@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { listStaffApi } from '@/api/staff.api';
+import { canReadStaff } from '@/lib/permissions';
 import { useAuthStore } from '@/stores/auth-store';
 import { getErrorMessage, type PaginatedMeta } from '@/types/api';
 import type { StaffListItem } from '@/types/staff';
@@ -14,12 +15,14 @@ type UseStaffListResult = {
 };
 
 export function useStaffList(): UseStaffListResult {
+  const user = useAuthStore((state) => state.user);
+  const canLoad = canReadStaff(user?.role);
   const authKey = useAuthStore((state) =>
     state.user ? `${state.user.id}:${state.user.role}` : 'guest',
   );
   const [staff, setStaff] = useState<StaffListItem[]>([]);
   const [meta, setMeta] = useState<PaginatedMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(canLoad);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -28,6 +31,14 @@ export function useStaffList(): UseStaffListResult {
   }, []);
 
   useEffect(() => {
+    if (!canLoad) {
+      setStaff([]);
+      setMeta(null);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
@@ -56,7 +67,7 @@ export function useStaffList(): UseStaffListResult {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, authKey]);
+  }, [reloadKey, authKey, canLoad]);
 
   return { staff, meta, isLoading, error, refetch };
 }

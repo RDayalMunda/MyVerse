@@ -64,6 +64,16 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="admin/create-photoshoot"
+          options={{
+            headerShown: true,
+            title: 'New Photoshoot',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
           name="project/[id]"
           options={{
             headerShown: true,

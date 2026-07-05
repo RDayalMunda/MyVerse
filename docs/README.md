@@ -35,4 +35,12 @@ For local development:
 EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
 ```
 
-Android emulator (host machine): `http://10.0.2.2:3000/api/v1`
+The app rewrites `localhost` automatically for native dev:
+
+| Platform | Resolved host |
+|----------|----------------|
+| Web | `localhost` (unchanged) |
+| Android emulator | `10.0.2.2` |
+| Physical device (Expo Go) | Your machine's LAN IP (from Metro, e.g. `192.168.x.x`) |
+
+Android emulator manual override: `http://10.0.2.2:3000/api/v1`

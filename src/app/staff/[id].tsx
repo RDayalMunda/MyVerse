@@ -18,6 +18,10 @@ import {
 } from '@/api/users.api';
 import { EmptyState } from '@/components/projects/project-card';
 import { TagChipList } from '@/components/staff/tag-chip-list';
+import {
+  FullscreenImageViewer,
+  useImageGallery,
+} from '@/components/media/fullscreen-image-viewer';
 import { useStaff } from '@/hooks/use-staff';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDateForDisplay } from '@/lib/date-format';
@@ -49,6 +53,7 @@ export default function StaffDetailScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const user = useAuthStore((s) => s.user);
+  const { openGallery, galleryProps } = useImageGallery();
   const { staff, isLoading, error, refetch } = useStaff(id);
   const [actionLoading, setActionLoading] = useState(false);
   const skipFocusRefetchRef = useRef(true);
@@ -140,7 +145,13 @@ export default function StaffDetailScreen() {
     >
       <View style={styles.hero}>
         {avatarUri ? (
-          <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="View profile photo fullscreen"
+            onPress={() => openGallery([{ uri: avatarUri, label: title }])}
+          >
+            <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
+          </Pressable>
         ) : (
           <View style={[styles.avatarPlaceholder, { backgroundColor: colors.surface }]}>
             <Text style={[styles.avatarInitial, { color: colors.tint }]}>
@@ -248,6 +259,7 @@ export default function StaffDetailScreen() {
           ))}
         </View>
       ) : null}
+      <FullscreenImageViewer {...galleryProps} />
     </ScrollView>
   );
 }

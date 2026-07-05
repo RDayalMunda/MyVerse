@@ -1,3 +1,5 @@
+import type { FileMeta } from '@/types/user';
+
 export type ProjectType = 'BOOK' | 'PHOTOSHOOT' | 'SHOW';
 
 export type ProjectStatus =
@@ -18,6 +20,11 @@ export type SectionItemKind = 'TEXT' | 'IMAGE' | 'VIDEO';
 
 export type BookDetails = {
   summary?: string;
+};
+
+export type PhotoshootDetails = {
+  theme?: string;
+  location?: string;
 };
 
 export type Project = {
@@ -42,6 +49,7 @@ export type SectionItem = {
   kind: SectionItemKind;
   label?: string;
   textContent?: string;
+  file?: FileMeta;
   sortOrder: number;
   createdAt?: string;
   updatedAt?: string;
@@ -62,6 +70,7 @@ export type Section = {
 
 export type ProjectDetail = Project & {
   bookDetails?: BookDetails;
+  photoshootDetails?: PhotoshootDetails;
   sections?: Section[];
 };
 
@@ -78,6 +87,18 @@ export type CreateSectionInput = {
 
 export type CreateTextItemInput = {
   textContent: string;
+  label?: string;
+};
+
+export type CreatePhotoshootInput = {
+  title: string;
+  description?: string;
+  theme?: string;
+  location?: string;
+};
+
+export type CreateImageItemInput = {
+  file: FileMeta;
   label?: string;
 };
 

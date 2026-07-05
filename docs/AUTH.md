@@ -53,8 +53,11 @@ Tabs in `src/app/(tabs)/_layout.tsx`:
 | Tab | Visibility |
 |-----|------------|
 | **Projects** | Always (default home) |
-| **Staff** | Always (public API) |
+| **Staff** | Logged-in `ADMIN` or `STAFF` only |
+| **Admin** | Logged-in `ADMIN` only |
 | **Users** | Logged-in `ADMIN` only |
+
+Guests can still self-register as staff via **Log in → Join as staff** (`/staff/register`).
 
 Direct navigation to `/users` without admin role shows an inline access-denied placeholder.
 

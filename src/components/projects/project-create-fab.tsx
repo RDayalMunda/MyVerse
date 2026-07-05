@@ -1,6 +1,7 @@
 import { CreateFab, type CreateFabOption } from '@/components/ui/create-fab';
 import { canManageProjects } from '@/lib/permissions';
 import { useAuthStore } from '@/stores/auth-store';
+import type { Href } from 'expo-router';
 
 const PROJECT_CREATE_OPTIONS: CreateFabOption[] = [
   {
@@ -13,9 +14,9 @@ const PROJECT_CREATE_OPTIONS: CreateFabOption[] = [
   {
     id: 'photoshoot',
     label: 'Photoshoot',
-    description: 'Image gallery — coming in Slice 2',
+    description: 'Image gallery with swipe viewer',
     icon: 'images-outline',
-    comingSoon: true,
+    href: '/admin/create-photoshoot' as Href,
   },
   {
     id: 'show',

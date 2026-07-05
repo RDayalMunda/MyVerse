@@ -13,11 +13,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StaffCard, StaffCardSkeleton } from '@/components/staff/staff-card';
 import { StaffCreateFab } from '@/components/staff/staff-create-fab';
 import { EmptyState } from '@/components/projects/project-card';
+import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
 import { CREATE_FAB_LIST_PADDING } from '@/components/ui/create-fab';
 import { useStaffList } from '@/hooks/use-staff-list';
 import { useTheme } from '@/hooks/use-theme';
 import {
-  canJoinAsStaff,
+  canReadStaff,
   canUpdateOwnStaffProfile,
   shouldShowStaffCreateFab,
 } from '@/lib/permissions';
@@ -29,12 +30,22 @@ export default function StaffScreen() {
   const { colors } = useTheme();
   const user = useAuthStore((state) => state.user);
   const showFab = shouldShowStaffCreateFab(user);
-  const canJoin = canJoinAsStaff(user);
   const isStaff = canUpdateOwnStaffProfile(user?.role);
   const { staff, meta, isLoading, error, refetch } = useStaffList();
 
   const listPaddingBottom =
     insets.bottom + (showFab ? CREATE_FAB_LIST_PADDING : 16);
+
+  if (!canReadStaff(user?.role)) {
+    return (
+      <PlaceholderScreen
+        title="Sign in required"
+        subtitle="Staff directory is available to signed-in staff and admin accounts."
+        iconName="people-outline"
+        denied
+      />
+    );
+  }
 
   if (isLoading && staff.length === 0) {
     return (
@@ -88,13 +99,7 @@ export default function StaffScreen() {
                     : 'No staff profiles yet.'
                 }
               />
-              {canJoin ? (
-                <Pressable onPress={() => router.push('/staff/register' as Href)}>
-                  <Text style={[styles.joinLink, { color: colors.tint }]}>
-                    Join as staff
-                  </Text>
-                </Pressable>
-              ) : isStaff ? (
+              {isStaff ? (
                 <Pressable
                   onPress={() => {
                     const profileId = user?.staffProfile?.id;

@@ -1,6 +1,7 @@
 import { request, requestWithMeta } from '@/api/client';
 import type {
   CreateBookInput,
+  CreatePhotoshootInput,
   Project,
   ProjectDetail,
 } from '@/types/project';
@@ -40,6 +41,23 @@ export async function createBookApi(input: CreateBookInput): Promise<Project> {
       title: input.title,
       description: input.description,
       bookDetails: input.summary ? { summary: input.summary } : undefined,
+    },
+  });
+}
+
+export async function createPhotoshootApi(
+  input: CreatePhotoshootInput,
+): Promise<Project> {
+  const { theme, location, ...rest } = input;
+  const hasDetails = theme || location;
+
+  return request<Project>('/projects', {
+    method: 'POST',
+    body: {
+      type: 'PHOTOSHOOT',
+      title: rest.title,
+      description: rest.description,
+      photoshootDetails: hasDetails ? { theme, location } : undefined,
     },
   });
 }

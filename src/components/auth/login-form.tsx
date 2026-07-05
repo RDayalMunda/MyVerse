@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
 
 import { FormField } from '@/components/ui/form-field';
 import { useTheme } from '@/hooks/use-theme';
@@ -24,6 +25,7 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ onSuccess, onContinueWithoutLogin }: LoginFormProps) {
+  const router = useRouter();
   const { colors } = useTheme();
   const isLoading = useAuthStore((state) => state.isLoading);
   const login = useAuthStore((state) => state.login);
@@ -119,6 +121,13 @@ export function LoginForm({ onSuccess, onContinueWithoutLogin }: LoginFormProps)
         <Text style={[styles.link, { color: colors.tint }]}>
           Continue without signing in
         </Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() => router.push('/staff/register' as Href)}
+        disabled={isLoading}
+      >
+        <Text style={[styles.link, { color: colors.tint }]}>Join as staff</Text>
       </Pressable>
     </View>
   );

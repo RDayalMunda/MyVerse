@@ -27,3 +27,23 @@ export async function uploadProfileImage(
     token: null,
   });
 }
+
+export async function uploadProjectImage(
+  image: PickedImage,
+): Promise<FileMeta> {
+  const formData = new FormData();
+
+  if (image.file) {
+    formData.append('file', image.file, image.name);
+  } else {
+    formData.append('file', {
+      uri: image.uri,
+      name: image.name,
+      type: image.type,
+    } as unknown as Blob);
+  }
+
+  return uploadFormData<FileMeta>('/media/upload/image', formData, {
+    token: null,
+  });
+}
