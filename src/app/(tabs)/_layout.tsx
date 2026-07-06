@@ -24,6 +24,7 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.textSecondary,
+        headerRightContainerStyle: { paddingRight: 16 },
         headerRight: () => <AuthHeaderActions />,
       }}
     >

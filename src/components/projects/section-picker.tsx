@@ -35,7 +35,6 @@ export function SectionPicker({
     }
     return (
       <View style={[styles.single, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-        <Text style={[styles.singleLabel, { color: colors.textSecondary }]}>Section</Text>
         <Text style={[styles.singleValue, { color: colors.text }]}>{selected.label}</Text>
       </View>
     );
@@ -44,7 +43,6 @@ export function SectionPicker({
   const sheetOptions = sorted.map((section) => ({
     id: section.id,
     label: section.label,
-    description: section.description,
     badge:
       showStatusBadge && section.status !== 'PUBLISHED'
         ? section.status
@@ -69,9 +67,6 @@ export function SectionPicker({
         onPress={() => setSheetOpen(true)}
       >
         <View style={styles.triggerText}>
-          <Text style={[styles.triggerLabel, { color: colors.textSecondary }]}>
-            Section
-          </Text>
           <Text style={[styles.triggerValue, { color: colors.text }]}>
             {selected?.label ?? 'Select section'}
           </Text>
@@ -83,7 +78,6 @@ export function SectionPicker({
         visible={sheetOpen}
         onClose={() => setSheetOpen(false)}
         title="Sections"
-        subtitle="Choose a section to view"
         options={sheetOptions}
         selectedId={selected?.id}
         onSelect={onSelectSectionId}
@@ -105,12 +99,6 @@ const styles = StyleSheet.create({
   },
   triggerText: {
     flex: 1,
-    gap: 2,
-  },
-  triggerLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
   },
   triggerValue: {
     fontSize: 16,
@@ -121,12 +109,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    gap: 2,
-  },
-  singleLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
   },
   singleValue: {
     fontSize: 16,

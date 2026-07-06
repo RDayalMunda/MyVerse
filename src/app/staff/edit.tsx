@@ -13,6 +13,7 @@ import { updateMyStaffProfileApi } from '@/api/staff.api';
 import { getMeApi } from '@/api/auth.api';
 import { updateMeApi } from '@/api/users.api';
 import { ProfileImagePicker } from '@/components/media/profile-image-picker';
+import { LogoutButton } from '@/components/auth/logout-button';
 import {
   emptyStaffProfileInput,
   StaffProfileFields,
@@ -172,6 +173,9 @@ export default function StaffEditScreen() {
         {error ? (
           <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
         ) : null}
+        <View style={styles.logoutSection}>
+          <LogoutButton />
+        </View>
       </ScrollView>
       <View style={[styles.footer, { borderTopColor: colors.border }]}>
         <Pressable
@@ -202,6 +206,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, gap: 16 },
   error: { fontSize: 14 },
+  logoutSection: { marginTop: 8 },
   footer: {
     padding: 16,
     borderTopWidth: 1,

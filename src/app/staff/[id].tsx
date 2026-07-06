@@ -17,6 +17,7 @@ import {
   deactivateUserApi,
 } from '@/api/users.api';
 import { EmptyState } from '@/components/projects/project-card';
+import { LogoutButton } from '@/components/auth/logout-button';
 import { TagChipList } from '@/components/staff/tag-chip-list';
 import {
   FullscreenImageViewer,
@@ -223,6 +224,12 @@ export default function StaffDetailScreen() {
         ) : null}
       </View>
 
+      {isOwnProfile ? (
+        <View style={styles.logoutSection}>
+          <LogoutButton />
+        </View>
+      ) : null}
+
       {staff.bio ? (
         <Text style={[styles.bio, { color: colors.text }]}>{staff.bio}</Text>
       ) : null}
@@ -282,6 +289,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 26, fontWeight: '700', textAlign: 'center' },
   subtitle: { fontSize: 15, textAlign: 'center' },
   actions: { gap: 10 },
+  logoutSection: { marginTop: 4 },
   actionButton: {
     borderRadius: 10,
     paddingVertical: 14,

@@ -66,6 +66,7 @@ Route: `/staff/edit` (STAFF role only)
 - **Date of birth:** native date picker (mobile) or browser date input (web). Form stores `YYYY-MM-DD`; API may return full ISO (`1997-11-30T00:00:00.000Z`). PATCH body sends date-only (`1997-11-30`).
 - **Likes / skills:** chip inputs — type a value and press Enter to add; tap × to remove. Stored as string arrays.
 - **Save flow:** full-page loader while saving → navigate to `/staff/:id` (own profile detail) with fresh data; header back returns to the previous screen.
+- **Log out:** available at the bottom of own `/staff/:id` and `/staff/edit` screens (not shown when an admin views another staff member's profile).
 
 **Edit profile** button on staff detail when `auth.user.id === profile.userId`.
 

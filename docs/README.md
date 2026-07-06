@@ -8,7 +8,7 @@ Documentation for the MyVerse Expo app (web, iOS, Android).
 |----------|-------------|
 | [DOCS.md](./DOCS.md) | Documentation conventions and maintenance workflow |
 | [ROADMAP.md](./ROADMAP.md) | Module-wise integration plan and slice status |
-| [AUTH.md](./AUTH.md) | Login, logout (with confirmation), session, header avatar |
+| [AUTH.md](./AUTH.md) | Login, logout on profile screen (with confirmation), session, header avatar |
 | [PROJECT.md](./PROJECT.md) | Projects — list, detail, admin create/edit, drafts on Projects tab |
 | [STAFF.md](./STAFF.md) | Staff directory, registration, profile management |
 | [MEDIA.md](./MEDIA.md) | Profile image upload |

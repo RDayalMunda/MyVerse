@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getMeApi } from '@/api/auth.api';
 import { updateMeApi } from '@/api/users.api';
 import { ProfileImagePicker } from '@/components/media/profile-image-picker';
+import { LogoutButton } from '@/components/auth/logout-button';
 import { SaveFormLayout } from '@/components/admin/save-form-layout';
 import { UserAvatar } from '@/components/user/user-avatar';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
@@ -144,6 +145,10 @@ export default function ProfileScreen() {
           Update your display name or photo, then save.
         </Text>
       ) : null}
+
+      <View style={styles.logoutSection}>
+        <LogoutButton />
+      </View>
     </SaveFormLayout>
   );
 }
@@ -181,5 +186,8 @@ const styles = StyleSheet.create({
   hint: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  logoutSection: {
+    marginTop: 24,
   },
 });

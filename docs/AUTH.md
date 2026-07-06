@@ -35,10 +35,11 @@ Ephemeral fields (not persisted): `isHydrated`, `isLoading`.
 
 ## Logout flow
 
-1. User taps **Log out** in the tab header
-2. A confirmation dialog asks **Are you sure you want to log out?**
-3. On confirm: auth store clears `accessToken` and `user`
-4. User remains on the public Projects tab (login is optional)
+1. User opens their profile screen (header avatar/name → `/profile` for admin/public; staff → `/staff/:id` or `/staff/edit`)
+2. User taps **Log out** at the bottom of the profile screen
+3. A confirmation dialog asks **Are you sure you want to log out?**
+4. On confirm: auth store clears `accessToken` and `user`
+5. User remains on the public Projects tab (login is optional)
 
 ## Header (signed in)
 
@@ -46,18 +47,19 @@ The tab header (`src/components/navigation/auth-header.tsx`) shows:
 
 - **Profile photo** when `user.profilePicture` is set
 - **Initials placeholder** otherwise (from display name, or username if no display name)
-- **Display name** and **role** (existing)
-- **Log out** button (with confirmation)
+- **Display name** and **role**
 - Tap **avatar or name** → profile screen (`/profile` for admin/public; staff → own staff profile)
+
+Header right padding (`paddingRight: 16`) is set in `src/app/(tabs)/_layout.tsx` so the **Log in** button is not flush against the screen edge.
 
 Avatar helper: `src/components/user/user-avatar.tsx` · initials logic: `src/lib/user-display.ts` · route helper: `src/lib/profile-navigation.ts`
 
 ## Profile screen
 
-| Role | Header tap destination |
-|------|------------------------|
-| **ADMIN** / **PUBLIC** | `/profile` — display name, photo, username, email |
-| **STAFF** | `/staff/:id` when profile exists, else `/staff/edit` |
+| Role | Header tap destination | Log out |
+|------|------------------------|---------|
+| **ADMIN** / **PUBLIC** | `/profile` — display name, photo, username, email | Bottom of profile screen |
+| **STAFF** | `/staff/:id` when profile exists, else `/staff/edit` | Bottom of own staff profile or edit screen |
 
 ## App launch / persistence
 
@@ -86,7 +88,8 @@ Permission helpers live in `src/lib/permissions.ts` and mirror backend role rule
 
 | File | Role |
 |------|------|
-| `src/components/navigation/auth-header.tsx` | Login / user badge / logout with confirmation |
+| `src/components/navigation/auth-header.tsx` | Login button (guest) / user badge (signed in) |
+| `src/components/auth/logout-button.tsx` | Log out button with confirmation dialog |
 | `src/components/user/user-avatar.tsx` | Profile photo or initials avatar |
 | `src/lib/user-display.ts` | Display name + initials helpers |
 | `src/lib/profile-navigation.ts` | Profile route by role |
@@ -96,12 +99,13 @@ Permission helpers live in `src/lib/permissions.ts` and mirror backend role rule
 
 ## Manual test checklist
 
-1. Guest header shows **Log in** only
+1. Guest header shows **Log in** only (with right padding, not flush to edge)
 2. Signed-in user with profile photo → avatar image in header
 3. Signed-in user without photo → initials placeholder (e.g. **Admin** → `A`, **John Doe** → `JD`)
-4. **Log out** → confirm dialog → cancel stays signed in
-5. **Log out** → confirm → session cleared, Projects tab remains
-6. Tap header avatar/name → opens profile (admin → `/profile`; staff → staff profile)
+4. Tap header avatar/name → opens profile (admin → `/profile`; staff → staff profile)
+5. **Log out** on profile screen → confirm dialog → cancel stays signed in
+6. **Log out** → confirm → session cleared, Projects tab remains
+7. Staff: **Log out** on own `/staff/:id` and `/staff/edit`; not shown when admin views another staff profile
 
 ## API client
 

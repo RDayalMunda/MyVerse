@@ -207,7 +207,7 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 
 1. Admin → + FAB → Book → publish → section picker + chapter text
 2. Admin → + FAB → Photoshoot → add 2+ photos → publish → inline swipe + tap for fullscreen
-3. Log out → published book/photoshoot appear → detail works for guests
+3. Log out from profile → published book/photoshoot appear → detail works for guests
 4. Draft project: visible on Projects tab for admin (status badge); guest gets 404 or empty on detail
 5. Admin preview: draft section badge in section picker; guest does not see draft sections
 6. Photoshoot empty section: “No photos in this session”
