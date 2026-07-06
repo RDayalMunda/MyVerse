@@ -5,6 +5,7 @@ import type {
   Project,
   ProjectDetail,
   ProjectHardDeleteResult,
+  ProjectVisibility,
   UpdateBookInput,
   UpdatePhotoshootInput,
 } from '@/types/project';
@@ -13,6 +14,16 @@ type ListProjectsParams = {
   page?: number;
   perPage?: number;
 };
+
+function projectAccessBody(input: {
+  visibility?: ProjectVisibility;
+  isAdult?: boolean;
+}) {
+  return {
+    ...(input.visibility !== undefined ? { visibility: input.visibility } : {}),
+    ...(input.isAdult !== undefined ? { isAdult: input.isAdult } : {}),
+  };
+}
 
 export async function listProjectsApi(params: ListProjectsParams = {}) {
   const page = params.page ?? 1;
@@ -44,6 +55,7 @@ export async function createBookApi(input: CreateBookInput): Promise<Project> {
       title: input.title,
       description: input.description,
       bookDetails: input.summary ? { summary: input.summary } : undefined,
+      ...projectAccessBody(input),
     },
   });
 }
@@ -61,6 +73,7 @@ export async function createPhotoshootApi(
       title: rest.title,
       description: rest.description,
       photoshootDetails: hasDetails ? { theme, location } : undefined,
+      ...projectAccessBody(input),
     },
   });
 }
@@ -75,6 +88,7 @@ export async function updateBookApi(
       title: input.title,
       description: input.description,
       bookDetails: input.summary ? { summary: input.summary } : undefined,
+      ...projectAccessBody(input),
     },
   });
 }
@@ -92,7 +106,18 @@ export async function updatePhotoshootApi(
       title: rest.title,
       description: rest.description,
       photoshootDetails: hasDetails ? { theme, location } : undefined,
+      ...projectAccessBody(input),
     },
+  });
+}
+
+export async function updateProjectVisibilityApi(
+  id: string,
+  visibility: ProjectVisibility,
+): Promise<Project> {
+  return request<Project>(`/projects/${id}/visibility`, {
+    method: 'PATCH',
+    body: { visibility },
   });
 }
 

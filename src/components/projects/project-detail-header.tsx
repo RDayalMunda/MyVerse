@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { VISIBILITY_LABELS } from '@/components/admin/project-access-fields';
 import { useTheme } from '@/hooks/use-theme';
 import type { ProjectDetail } from '@/types/project';
 
@@ -11,9 +12,13 @@ const TYPE_LABELS = {
 
 type ProjectDetailHeaderProps = {
   project: ProjectDetail;
+  showAccessBadges?: boolean;
 };
 
-export function ProjectDetailHeader({ project }: ProjectDetailHeaderProps) {
+export function ProjectDetailHeader({
+  project,
+  showAccessBadges = false,
+}: ProjectDetailHeaderProps) {
   const { colors } = useTheme();
 
   return (
@@ -29,6 +34,18 @@ export function ProjectDetailHeader({ project }: ProjectDetailHeaderProps) {
             <Text style={[styles.statusText, { color: colors.textSecondary }]}>
               {project.status}
             </Text>
+          </View>
+        ) : null}
+        {showAccessBadges ? (
+          <View style={[styles.statusBadge, { borderColor: colors.border }]}>
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+              {VISIBILITY_LABELS[project.visibility]}
+            </Text>
+          </View>
+        ) : null}
+        {showAccessBadges && project.isAdult ? (
+          <View style={[styles.adultBadge, { borderColor: colors.error }]}>
+            <Text style={[styles.adultText, { color: colors.error }]}>18+</Text>
           </View>
         ) : null}
       </View>
@@ -118,6 +135,16 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: '600',
+  },
+  adultBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  adultText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   title: {
     fontSize: 28,

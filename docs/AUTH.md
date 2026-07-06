@@ -33,6 +33,17 @@ Ephemeral fields (not persisted): `isHydrated`, `isLoading`.
 | 403 | Account deactivated |
 | Network | Unable to reach server |
 
+## Public registration flow
+
+1. Guest opens `/login` → **Create account** (or navigate directly to `/register`)
+2. **Account** step — email, username, password, optional display name
+3. **Photo** step — optional profile photo via `POST /media/upload`
+4. `POST /auth/register` → creates `PUBLIC` role user
+5. On success: `registerPublic` in auth store → logged in on Projects tab
+6. Signed-in users are redirected away from `/register`
+
+Duplicate email/username returns a friendly 409 message.
+
 ## Logout flow
 
 1. User opens their profile screen (header avatar/name → `/profile` for admin/public; staff → `/staff/:id` or `/staff/edit`)
@@ -56,10 +67,12 @@ Avatar helper: `src/components/user/user-avatar.tsx` · initials logic: `src/lib
 
 ## Profile screen
 
-| Role | Header tap destination | Log out |
-|------|------------------------|---------|
-| **ADMIN** / **PUBLIC** | `/profile` — display name, photo, username, email | Bottom of profile screen |
-| **STAFF** | `/staff/:id` when profile exists, else `/staff/edit` | Bottom of own staff profile or edit screen |
+| Role | Header tap destination | Log out | 18+ content |
+|------|------------------------|---------|-------------|
+| **ADMIN** / **PUBLIC** | `/profile` — display name, photo, username, email | Bottom of profile screen | Toggle on profile; save refreshes project list |
+
+**Save feedback:** Saving profile changes shows a success toast ("Profile saved") and stays on the page. See [UX.md](./UX.md).
+| **STAFF** | `/staff/:id` when profile exists, else `/staff/edit` | Bottom of own staff profile or edit screen | Toggle on `/staff/edit`; save refreshes project list |
 
 ## App launch / persistence
 
@@ -78,7 +91,7 @@ Tabs in `src/app/(tabs)/_layout.tsx`:
 | **Staff** | Logged-in `ADMIN` or `STAFF` only |
 | **Users** | Logged-in `ADMIN` only |
 
-Guests can still self-register as staff via **Log in → Join as staff** (`/staff/register`).
+Guests can self-register via **Log in → Create account** (`/register`) or **Join as staff** (`/staff/register`).
 
 Direct navigation to `/users` without admin role shows an inline access-denied placeholder.
 
@@ -89,12 +102,17 @@ Permission helpers live in `src/lib/permissions.ts` and mirror backend role rule
 | File | Role |
 |------|------|
 | `src/components/navigation/auth-header.tsx` | Login button (guest) / user badge (signed in) |
+| `src/components/auth/login-form.tsx` | Sign-in form; links to register and staff join |
+| `src/components/auth/public-register-wizard.tsx` | Public account registration wizard |
 | `src/components/auth/logout-button.tsx` | Log out button with confirmation dialog |
 | `src/components/user/user-avatar.tsx` | Profile photo or initials avatar |
 | `src/lib/user-display.ts` | Display name + initials helpers |
 | `src/lib/profile-navigation.ts` | Profile route by role |
-| `src/app/profile.tsx` | Account profile for admin/public users |
-| `src/stores/auth-store.ts` | Session persistence |
+| `src/app/login.tsx` | Sign-in modal screen |
+| `src/app/register.tsx` | Create account modal screen |
+| `src/app/profile.tsx` | Account profile for admin/public users (incl. nsfw toggle) |
+| `src/stores/auth-store.ts` | Session persistence; `login`, `registerPublic`, `registerStaff` |
+| `src/api/auth.api.ts` | Login, register, me |
 | `src/api/client.ts` | JWT attachment + 401 logout |
 
 ## Manual test checklist
@@ -106,6 +124,10 @@ Permission helpers live in `src/lib/permissions.ts` and mirror backend role rule
 5. **Log out** on profile screen → confirm dialog → cancel stays signed in
 6. **Log out** → confirm → session cleared, Projects tab remains
 7. Staff: **Log out** on own `/staff/:id` and `/staff/edit`; not shown when admin views another staff profile
+8. Guest → **Create account** → completes wizard → logged in as PUBLIC on Projects tab
+9. Duplicate email on register → friendly error message
+10. Signed-in user opening `/register` → redirected to Projects tab
+11. Profile → enable **Show 18+ content** → save → adult projects appear on Projects tab after refocus
 
 ## API client
 
@@ -119,6 +141,18 @@ Staff can register via `POST /auth/register/staff` (see [STAFF.md](./STAFF.md)).
 2. Client calls `POST /auth/register/staff` with account + profile + `profilePicture`
 3. On success: `registerStaff` in auth store calls `setSession(accessToken, user)` — same persistence as login
 4. User is logged in as `STAFF` with JWT in AsyncStorage
+
+## Public self-registration
+
+Public users register via `POST /auth/register`:
+
+1. Optional profile photo via `POST /media/upload`
+2. `POST /auth/register` with `{ email, username, password, displayName?, profilePicture? }`
+3. On success: `registerPublic` in auth store → `PUBLIC` role session
+
+## Profile preferences (18+ content)
+
+`PATCH /users/me` with `{ nsfwEnabled: true }` from `/profile`. Required for non-admins to view projects with `isAdult: true`. Saving toggles `invalidateProjectsList()` so the Projects tab refetches on focus.
 
 ## Related backend docs
 

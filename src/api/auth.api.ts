@@ -1,5 +1,5 @@
 import { request } from '@/api/client';
-import type { LoginResponse, User } from '@/types/user';
+import type { LoginResponse, RegisterPublicRequest, User } from '@/types/user';
 import type { RegisterStaffRequest } from '@/types/staff';
 
 export async function loginApi(
@@ -22,6 +22,17 @@ export async function registerStaffApi(
   body: RegisterStaffRequest,
 ): Promise<LoginResponse> {
   return request<LoginResponse>('/auth/register/staff', {
+    method: 'POST',
+    body,
+    token: null,
+    skipAuthLogout: true,
+  });
+}
+
+export async function registerPublicApi(
+  body: RegisterPublicRequest,
+): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/register', {
     method: 'POST',
     body,
     token: null,

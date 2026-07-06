@@ -63,9 +63,10 @@ Route: `/staff/edit` (STAFF role only)
 
 - Profile fields → `PATCH /staff/me`
 - Photo → upload then `PATCH /users/me`
+- **18+ content** → toggle on edit screen → `PATCH /users/me` `{ nsfwEnabled }` (same as public profile)
 - **Date of birth:** native date picker (mobile) or browser date input (web). Form stores `YYYY-MM-DD`; API may return full ISO (`1997-11-30T00:00:00.000Z`). PATCH body sends date-only (`1997-11-30`).
 - **Likes / skills:** chip inputs — type a value and press Enter to add; tap × to remove. Stored as string arrays.
-- **Save flow:** full-page loader while saving → navigate to `/staff/:id` (own profile detail) with fresh data; header back returns to the previous screen.
+- **Save flow:** full-page loader while saving → navigate to `/staff/:id` (own profile detail) with fresh data; success toast "Profile saved" persists on the detail screen; header back returns to the previous screen.
 - **Log out:** available at the bottom of own `/staff/:id` and `/staff/edit` screens (not shown when an admin views another staff member's profile).
 
 **Edit profile** button on staff detail when `auth.user.id === profile.userId`.
@@ -76,7 +77,7 @@ Staff tab empty state **Edit your profile** opens your profile detail first (whe
 
 On staff detail (`/staff/[id]`) when ADMIN:
 
-- **Edit account** → `/staff/[id]/edit-account` → `PATCH /users/:userId`
+- **Edit account** → `/staff/[id]/edit-account` → `PATCH /users/:userId` — toast "Account updated" + back to staff detail
 - **Deactivate / Activate** → `PATCH /users/:id/deactivate` or `/activate`
 
 No UI for admin to edit stageName, bio, or body measurements.

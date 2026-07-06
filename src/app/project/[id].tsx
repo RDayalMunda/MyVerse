@@ -60,7 +60,7 @@ export default function ProjectDetailScreen() {
         { paddingBottom: insets.bottom + 24 },
       ]}
     >
-      <ProjectDetailHeader project={project} />
+      <ProjectDetailHeader project={project} showAccessBadges={isAdmin} />
 
       {isAdmin ? (
         <Pressable

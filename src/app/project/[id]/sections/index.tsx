@@ -20,6 +20,7 @@ import {
 } from '@/hooks/use-project-on-focus';
 import { useTheme } from '@/hooks/use-theme';
 import { idsInOrder, moveItemDown, moveItemUp } from '@/lib/reorder';
+import { showStaySuccess } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 import type { Section } from '@/types/project';
@@ -51,6 +52,8 @@ export default function SectionsListScreen() {
       setSections(nextSections);
       invalidateProjectsList();
       refetch();
+      // SaveFeedbackPattern.StayOnPage — see docs/UX.md
+      showStaySuccess('Order saved');
     } catch (err) {
       setReorderError(getErrorMessage(err));
     } finally {

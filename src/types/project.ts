@@ -74,7 +74,12 @@ export type ProjectDetail = Project & {
   sections?: Section[];
 };
 
-export type CreateBookInput = {
+export type ProjectAccessInput = {
+  visibility?: ProjectVisibility;
+  isAdult?: boolean;
+};
+
+export type CreateBookInput = ProjectAccessInput & {
   title: string;
   description?: string;
   summary?: string;
@@ -90,7 +95,7 @@ export type CreateTextItemInput = {
   label?: string;
 };
 
-export type CreatePhotoshootInput = {
+export type CreatePhotoshootInput = ProjectAccessInput & {
   title: string;
   description?: string;
   theme?: string;
@@ -102,13 +107,13 @@ export type CreateImageItemInput = {
   label?: string;
 };
 
-export type UpdateBookInput = {
+export type UpdateBookInput = ProjectAccessInput & {
   title: string;
   description?: string;
   summary?: string;
 };
 
-export type UpdatePhotoshootInput = {
+export type UpdatePhotoshootInput = ProjectAccessInput & {
   title: string;
   description?: string;
   theme?: string;

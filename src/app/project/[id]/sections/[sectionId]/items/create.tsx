@@ -9,6 +9,7 @@ import {
   type TextItemFieldsValue,
 } from '@/components/admin/text-item-fields';
 import { validateRequiredText } from '@/lib/form-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 
@@ -39,12 +40,21 @@ export default function CreateTextItemScreen() {
 
     setIsSaving(true);
     try {
-      await createTextItemApi(id, sectionId, {
-        textContent: fields.textContent.trim(),
-        label: fields.label.trim() || undefined,
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Item saved',
+        action: async () => {
+          await createTextItemApi(id, sectionId, {
+            textContent: fields.textContent.trim(),
+            label: fields.label.trim() || undefined,
+          });
+          invalidateProjectsList();
+        },
+        onSuccess: () => {
+          router.back();
+        },
       });
-      invalidateProjectsList();
-      router.back();
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {

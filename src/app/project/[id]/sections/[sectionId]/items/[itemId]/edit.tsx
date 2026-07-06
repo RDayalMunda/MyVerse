@@ -29,6 +29,7 @@ import { EmptyState } from '@/components/projects/project-card';
 import { useProjectOnFocus } from '@/hooks/use-project-on-focus';
 import { useTheme } from '@/hooks/use-theme';
 import { validateRequiredText } from '@/lib/form-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { mediaUrl } from '@/lib/media-url';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
@@ -85,25 +86,40 @@ export default function EditSectionItemScreen() {
         );
         if (contentError) {
           setFormError(contentError);
+          setIsSaving(false);
           return;
         }
-        await updateSectionItemApi(id, sectionId, itemId, {
-          textContent: textFields.textContent.trim(),
-          label: textFields.label.trim() || undefined,
-        });
-      } else if (item.kind === 'IMAGE') {
-        const body: { label?: string; file?: Awaited<ReturnType<typeof uploadProjectImage>> } =
-          {
-            label: imageLabel.trim() || undefined,
-          };
-        if (replacementPhotos.length > 0) {
-          body.file = await uploadProjectImage(replacementPhotos[0]);
-        }
-        await updateSectionItemApi(id, sectionId, itemId, body);
       }
-      invalidateProjectsList();
-      refetch();
-      router.back();
+
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Item saved',
+        action: async () => {
+          if (item.kind === 'TEXT') {
+            await updateSectionItemApi(id, sectionId, itemId, {
+              textContent: textFields.textContent.trim(),
+              label: textFields.label.trim() || undefined,
+            });
+          } else if (item.kind === 'IMAGE') {
+            const body: {
+              label?: string;
+              file?: Awaited<ReturnType<typeof uploadProjectImage>>;
+            } = {
+              label: imageLabel.trim() || undefined,
+            };
+            if (replacementPhotos.length > 0) {
+              body.file = await uploadProjectImage(replacementPhotos[0]);
+            }
+            await updateSectionItemApi(id, sectionId, itemId, body);
+          }
+          invalidateProjectsList();
+          refetch();
+        },
+        onSuccess: () => {
+          router.back();
+        },
+      });
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {

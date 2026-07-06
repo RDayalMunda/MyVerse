@@ -26,6 +26,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { mediaUrl } from '@/lib/media-url';
 import { idsInOrder, moveItemDown, moveItemUp } from '@/lib/reorder';
+import { showStaySuccess } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 import type { SectionItem } from '@/types/project';
@@ -68,6 +69,8 @@ export default function SectionItemsScreen() {
       setItems(nextItems);
       invalidateProjectsList();
       refetch();
+      // SaveFeedbackPattern.StayOnPage — see docs/UX.md
+      showStaySuccess('Order saved');
     } catch (err) {
       setListError(getErrorMessage(err));
     } finally {

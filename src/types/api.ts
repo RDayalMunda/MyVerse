@@ -54,3 +54,16 @@ export function getLoginErrorMessage(error: unknown): string {
   }
   return getErrorMessage(error);
 }
+
+export function getRegisterErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.statusCode === 409) {
+      return 'An account with this email or username already exists';
+    }
+    return error.message;
+  }
+  if (error instanceof TypeError) {
+    return 'Unable to reach server';
+  }
+  return getErrorMessage(error);
+}

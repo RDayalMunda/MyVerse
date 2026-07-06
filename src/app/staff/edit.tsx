@@ -19,11 +19,13 @@ import {
   StaffProfileFields,
 } from '@/components/staff/staff-profile-fields';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
+import { NsfwPreferenceField } from '@/components/user/nsfw-preference-field';
 import { useTheme } from '@/hooks/use-theme';
-import { invalidateStaffList } from '@/stores/list-invalidation-store';
+import { invalidateProjectsList, invalidateStaffList } from '@/stores/list-invalidation-store';
 import { toApiDateValue, toDateInputValue } from '@/lib/date-format';
 import { canUpdateOwnStaffProfile } from '@/lib/permissions';
 import { validateStaffProfileBody } from '@/lib/staff-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { useAuthStore } from '@/stores/auth-store';
 import { getErrorMessage } from '@/types/api';
 import type { StaffProfileInput } from '@/types/staff';
@@ -41,6 +43,7 @@ export default function StaffEditScreen() {
   const [profilePicture, setProfilePicture] = useState<FileMeta | null>(
     user?.profilePicture ?? null,
   );
+  const [nsfwEnabled, setNsfwEnabled] = useState(user?.nsfwEnabled ?? false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -84,6 +87,7 @@ export default function StaffEditScreen() {
         loadCapacityMl: sp.loadCapacityMl,
       });
       setProfilePicture(currentUser.profilePicture ?? null);
+      setNsfwEnabled(currentUser.nsfwEnabled ?? false);
       setInitialized(true);
     }
 
@@ -121,32 +125,51 @@ export default function StaffEditScreen() {
 
     setIsSaving(true);
     try {
-      const updatedProfile = await updateMyStaffProfileApi({
-        ...profile,
-        stageName: profile.stageName?.trim(),
-        bio: profile.bio?.trim(),
-        location: profile.location?.trim() || undefined,
-        dateOfBirth: toApiDateValue(profile.dateOfBirth),
+      // SaveFeedbackPattern.OverlayThenReplace — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.OverlayThenReplace,
+        successMessage: 'Profile saved',
+        action: async () => {
+          const updatedProfile = await updateMyStaffProfileApi({
+            ...profile,
+            stageName: profile.stageName?.trim(),
+            bio: profile.bio?.trim(),
+            location: profile.location?.trim() || undefined,
+            dateOfBirth: toApiDateValue(profile.dateOfBirth),
+          });
+
+          const pictureChanged =
+            profilePicture !== null &&
+            profilePicture.mediaId !== user?.profilePicture?.mediaId;
+          const nsfwChanged = nsfwEnabled !== (user?.nsfwEnabled ?? false);
+
+          if (pictureChanged || nsfwChanged) {
+            await updateMeApi({
+              ...(pictureChanged ? { profilePicture: profilePicture ?? undefined } : {}),
+              ...(nsfwChanged ? { nsfwEnabled } : {}),
+            });
+          }
+
+          mergeStaffProfileInSession(updatedProfile);
+
+          if (accessToken) {
+            const refreshed = await getMeApi().catch(() => null);
+            if (refreshed) {
+              setSession(accessToken, refreshed);
+            }
+          }
+
+          if (nsfwChanged) {
+            invalidateProjectsList();
+          }
+
+          invalidateStaffList();
+          return updatedProfile;
+        },
+        onSuccess: (updatedProfile) => {
+          router.replace(`/staff/${updatedProfile.id}` as Href);
+        },
       });
-
-      if (
-        profilePicture &&
-        profilePicture.mediaId !== user?.profilePicture?.mediaId
-      ) {
-        await updateMeApi({ profilePicture });
-      }
-
-      mergeStaffProfileInSession(updatedProfile);
-
-      if (accessToken) {
-        const refreshed = await getMeApi().catch(() => null);
-        if (refreshed) {
-          setSession(accessToken, refreshed);
-        }
-      }
-
-      invalidateStaffList();
-      router.replace(`/staff/${updatedProfile.id}` as Href);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -169,6 +192,11 @@ export default function StaffEditScreen() {
           requireStageName
           requireBio
           showValidation={submitAttempted}
+        />
+        <NsfwPreferenceField
+          value={nsfwEnabled}
+          onChange={setNsfwEnabled}
+          disabled={isSaving}
         />
         {error ? (
           <Text style={[styles.error, { color: colors.error }]}>{error}</Text>

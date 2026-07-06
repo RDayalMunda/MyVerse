@@ -32,7 +32,8 @@ export default function StaffScreen() {
   const user = useAuthStore((state) => state.user);
   const showFab = shouldShowStaffCreateFab(user);
   const isStaff = canUpdateOwnStaffProfile(user?.role);
-  const { staff, meta, isLoading, error, refetch } = useStaffList();
+  const { staff, meta, isLoading, isLoadingMore, error, refetch, loadMore } =
+    useStaffList();
 
   useStaleListRefetch('staff', refetch);
 
@@ -120,6 +121,15 @@ export default function StaffScreen() {
           )
         }
         renderItem={({ item }) => <StaffCard staff={item} />}
+        onEndReached={() => loadMore()}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator color={colors.tint} />
+            </View>
+          ) : null
+        }
       />
       <StaffCreateFab />
     </View>
@@ -135,4 +145,5 @@ const styles = StyleSheet.create({
   list: { padding: 16, gap: 12 },
   emptyWrap: { gap: 12, alignItems: 'center' },
   joinLink: { fontSize: 15, fontWeight: '600' },
+  footerLoader: { paddingVertical: 16, alignItems: 'center' },
 });

@@ -41,6 +41,7 @@ export default function CreateSectionScreen() {
         description: fields.description.trim() || undefined,
       });
       invalidateProjectsList();
+      // SaveFeedbackPattern.NavigateReplace — landing on section edit is feedback; see docs/UX.md
       router.replace(`/project/${id}/sections/${section.id}/edit` as Href);
     } catch (err) {
       setFormError(getErrorMessage(err));

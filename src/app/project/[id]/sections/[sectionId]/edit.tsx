@@ -25,6 +25,7 @@ import { EmptyState } from '@/components/projects/project-card';
 import { useProjectOnFocus } from '@/hooks/use-project-on-focus';
 import { useTheme } from '@/hooks/use-theme';
 import { validateRequiredText } from '@/lib/form-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 
@@ -73,13 +74,22 @@ export default function EditSectionScreen() {
 
     setIsSaving(true);
     try {
-      await updateSectionApi(id, sectionId, {
-        label: fields.label.trim(),
-        description: fields.description.trim() || undefined,
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Section updated',
+        action: async () => {
+          await updateSectionApi(id, sectionId, {
+            label: fields.label.trim(),
+            description: fields.description.trim() || undefined,
+          });
+          invalidateProjectsList();
+          refetch();
+        },
+        onSuccess: () => {
+          router.back();
+        },
       });
-      invalidateProjectsList();
-      refetch();
-      router.back();
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {
@@ -91,14 +101,22 @@ export default function EditSectionScreen() {
     if (!id || !sectionId || !section) return;
     setActionLoading(true);
     setFormError(null);
+    const isPublished = section.status === 'PUBLISHED';
     try {
-      if (section.status === 'PUBLISHED') {
-        await unpublishSectionApi(id, sectionId);
-      } else {
-        await publishSectionApi(id, sectionId);
-      }
-      invalidateProjectsList();
-      refetch();
+      // SaveFeedbackPattern.StayOnPage — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.StayOnPage,
+        successMessage: isPublished ? 'Section unpublished' : 'Section published',
+        action: async () => {
+          if (isPublished) {
+            await unpublishSectionApi(id, sectionId);
+          } else {
+            await publishSectionApi(id, sectionId);
+          }
+          invalidateProjectsList();
+          refetch();
+        },
+      });
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {

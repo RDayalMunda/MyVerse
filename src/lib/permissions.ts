@@ -9,6 +9,11 @@ export function canJoinAsStaff(user?: User | null): boolean {
   return !user;
 }
 
+/** Guest-only: public account registration. */
+export function canRegisterPublic(user?: User | null): boolean {
+  return !user;
+}
+
 /** FAB on Staff tab: guests (join) and admins (create). Hidden for STAFF/PUBLIC. */
 export function shouldShowStaffCreateFab(user?: User | null): boolean {
   if (!user) {

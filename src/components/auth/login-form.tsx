@@ -124,6 +124,13 @@ export function LoginForm({ onSuccess, onContinueWithoutLogin }: LoginFormProps)
       </Pressable>
 
       <Pressable
+        onPress={() => router.push('/register' as Href)}
+        disabled={isLoading}
+      >
+        <Text style={[styles.link, { color: colors.tint }]}>Create account</Text>
+      </Pressable>
+
+      <Pressable
         onPress={() => router.push('/staff/register' as Href)}
         disabled={isLoading}
       >

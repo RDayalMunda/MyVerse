@@ -24,6 +24,7 @@ import {
   validateEmail,
   validateUsername,
 } from '@/lib/form-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { useAuthStore } from '@/stores/auth-store';
 import { getErrorMessage } from '@/types/api';
 import type { FileMeta } from '@/types/user';
@@ -101,13 +102,22 @@ export default function StaffEditAccountScreen() {
 
     setIsSaving(true);
     try {
-      await updateUserApi(staff!.user!.id, {
-        email: email.trim(),
-        username: username.trim(),
-        displayName: displayName.trim() || undefined,
-        profilePicture: profilePicture ?? undefined,
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Account updated',
+        action: async () => {
+          await updateUserApi(staff!.user!.id, {
+            email: email.trim(),
+            username: username.trim(),
+            displayName: displayName.trim() || undefined,
+            profilePicture: profilePicture ?? undefined,
+          });
+        },
+        onSuccess: () => {
+          router.back();
+        },
       });
-      router.back();
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

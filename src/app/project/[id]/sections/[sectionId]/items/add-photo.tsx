@@ -16,6 +16,7 @@ import {
 import { ProjectAdminGate } from '@/components/admin/project-admin-gate';
 import { SaveFormLayout } from '@/components/admin/save-form-layout';
 import { useTheme } from '@/hooks/use-theme';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 
@@ -45,15 +46,24 @@ export default function AddPhotoItemScreen() {
 
     setIsSaving(true);
     try {
-      for (const photo of photos) {
-        const fileMeta = await uploadProjectImage(photo);
-        await createImageItemApi(id, sectionId, {
-          file: fileMeta,
-          label: label.trim() || undefined,
-        });
-      }
-      invalidateProjectsList();
-      router.back();
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Photo added',
+        action: async () => {
+          for (const photo of photos) {
+            const fileMeta = await uploadProjectImage(photo);
+            await createImageItemApi(id, sectionId, {
+              file: fileMeta,
+              label: label.trim() || undefined,
+            });
+          }
+          invalidateProjectsList();
+        },
+        onSuccess: () => {
+          router.back();
+        },
+      });
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {

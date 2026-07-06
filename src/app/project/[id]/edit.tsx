@@ -11,12 +11,18 @@ import {
   ProjectPhotoshootFields,
   type ProjectPhotoshootFieldsValue,
 } from '@/components/admin/project-photoshoot-fields';
+import {
+  ProjectAccessFields,
+  projectAccessFromProject,
+  type ProjectAccessFieldsValue,
+} from '@/components/admin/project-access-fields';
 import { ProjectAdminGate } from '@/components/admin/project-admin-gate';
 import { SaveFormLayout } from '@/components/admin/save-form-layout';
 import { EmptyState } from '@/components/projects/project-card';
 import { useProjectOnFocus } from '@/hooks/use-project-on-focus';
 import { useTheme } from '@/hooks/use-theme';
 import { validateRequiredText } from '@/lib/form-validation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 
@@ -42,6 +48,10 @@ export default function EditProjectScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [accessFields, setAccessFields] = useState<ProjectAccessFieldsValue>({
+    visibility: 'PUBLIC',
+    isAdult: false,
+  });
 
   useEffect(() => {
     if (!project || initialized) return;
@@ -60,6 +70,7 @@ export default function EditProjectScreen() {
         location: project.photoshootDetails?.location ?? '',
       });
     }
+    setAccessFields(projectAccessFromProject(project));
     setInitialized(true);
   }, [project, initialized]);
 
@@ -78,23 +89,36 @@ export default function EditProjectScreen() {
 
     setIsSaving(true);
     try {
-      if (project.type === 'BOOK') {
-        await updateBookApi(project.id, {
-          title: bookFields.title.trim(),
-          description: bookFields.description.trim() || undefined,
-          summary: bookFields.summary.trim() || undefined,
-        });
-      } else if (project.type === 'PHOTOSHOOT') {
-        await updatePhotoshootApi(project.id, {
-          title: photoshootFields.title.trim(),
-          description: photoshootFields.description.trim() || undefined,
-          theme: photoshootFields.theme.trim() || undefined,
-          location: photoshootFields.location.trim() || undefined,
-        });
-      }
-      invalidateProjectsList();
-      refetch();
-      router.back();
+      // SaveFeedbackPattern.NavigateBack — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.NavigateBack,
+        successMessage: 'Project updated',
+        action: async () => {
+          if (project.type === 'BOOK') {
+            await updateBookApi(project.id, {
+              title: bookFields.title.trim(),
+              description: bookFields.description.trim() || undefined,
+              summary: bookFields.summary.trim() || undefined,
+              visibility: accessFields.visibility,
+              isAdult: accessFields.isAdult,
+            });
+          } else if (project.type === 'PHOTOSHOOT') {
+            await updatePhotoshootApi(project.id, {
+              title: photoshootFields.title.trim(),
+              description: photoshootFields.description.trim() || undefined,
+              theme: photoshootFields.theme.trim() || undefined,
+              location: photoshootFields.location.trim() || undefined,
+              visibility: accessFields.visibility,
+              isAdult: accessFields.isAdult,
+            });
+          }
+          invalidateProjectsList();
+          refetch();
+        },
+        onSuccess: () => {
+          router.back();
+        },
+      });
     } catch (err) {
       setFormError(getErrorMessage(err));
     } finally {
@@ -142,6 +166,11 @@ export default function EditProjectScreen() {
               editable={!isSaving}
             />
           )}
+          <ProjectAccessFields
+            value={accessFields}
+            onChange={setAccessFields}
+            editable={!isSaving}
+          />
         </SaveFormLayout>
       )}
     </ProjectAdminGate>

@@ -10,11 +10,13 @@ import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { publishProjectApi } from '@/api/projects.api';
+import { VISIBILITY_LABELS } from '@/components/admin/project-access-fields';
 import { ManageNavRow } from '@/components/admin/manage-nav-row';
 import { ProjectAdminGate } from '@/components/admin/project-admin-gate';
 import { EmptyState } from '@/components/projects/project-card';
 import { useProjectOnFocus } from '@/hooks/use-project-on-focus';
 import { useTheme } from '@/hooks/use-theme';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 import { useState } from 'react';
@@ -42,9 +44,16 @@ export default function ManageProjectScreen() {
     setPublishError(null);
     setIsPublishing(true);
     try {
-      await publishProjectApi(project.id);
-      invalidateProjectsList();
-      refetch();
+      // SaveFeedbackPattern.StayOnPage — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.StayOnPage,
+        successMessage: 'Project published',
+        action: async () => {
+          await publishProjectApi(project.id);
+          invalidateProjectsList();
+          refetch();
+        },
+      });
     } catch (err) {
       setPublishError(getErrorMessage(err));
     } finally {
@@ -89,12 +98,20 @@ export default function ManageProjectScreen() {
             <Text style={[styles.summaryStatus, { color: colors.textSecondary }]}>
               Status: {project.status}
             </Text>
+            <Text style={[styles.summaryStatus, { color: colors.textSecondary }]}>
+              Visibility: {VISIBILITY_LABELS[project.visibility]}
+            </Text>
+            {project.isAdult ? (
+              <Text style={[styles.summaryAdult, { color: colors.error }]}>
+                18+ adult content
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.nav}>
             <ManageNavRow
               label="Edit project details"
-              description="Title, description, and type-specific fields"
+              description="Title, description, visibility, and type-specific fields"
               onPress={() => router.push(`/project/${id}/edit` as Href)}
             />
             <ManageNavRow
@@ -161,6 +178,10 @@ const styles = StyleSheet.create({
   },
   summaryStatus: {
     fontSize: 14,
+  },
+  summaryAdult: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   nav: {
     gap: 12,

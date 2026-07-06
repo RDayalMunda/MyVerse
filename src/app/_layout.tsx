@@ -1,3 +1,4 @@
+import 'react-native-reanimated';
 import { Stack } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useEffect } from 'react';
@@ -5,6 +6,7 @@ import type { ReactNode } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AppToastHost } from '@/components/ui/app-toast';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -47,6 +49,17 @@ export default function RootLayout() {
           options={{
             headerShown: true,
             title: 'Sign in',
+            presentation: 'modal',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="register"
+          options={{
+            headerShown: true,
+            title: 'Create account',
             presentation: 'modal',
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
@@ -234,6 +247,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <AppToastHost />
     </SafeAreaProvider>
   );
 }

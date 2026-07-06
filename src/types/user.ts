@@ -29,3 +29,11 @@ export type LoginResponse = {
   accessToken: string;
   user: User;
 };
+
+export type RegisterPublicRequest = {
+  email: string;
+  username: string;
+  password: string;
+  displayName?: string;
+  profilePicture?: FileMeta;
+};

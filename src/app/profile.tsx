@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import { ProfileImagePicker } from '@/components/media/profile-image-picker';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { SaveFormLayout } from '@/components/admin/save-form-layout';
 import { UserAvatar } from '@/components/user/user-avatar';
+import { NsfwPreferenceField } from '@/components/user/nsfw-preference-field';
 import { PlaceholderScreen } from '@/components/ui/placeholder-screen';
 import {
   AdminFormField,
@@ -18,7 +19,9 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { getUserDisplayName } from '@/lib/user-display';
 import { getProfileHref } from '@/lib/profile-navigation';
+import { runSaveAction, SaveFeedbackPattern } from '@/lib/save-feedback';
 import { selectIsAuthenticated, useAuthStore } from '@/stores/auth-store';
+import { invalidateProjectsList } from '@/stores/list-invalidation-store';
 import { getErrorMessage } from '@/types/api';
 import type { FileMeta } from '@/types/user';
 
@@ -34,8 +37,16 @@ export default function ProfileScreen() {
   const [profilePicture, setProfilePicture] = useState<FileMeta | null>(
     user?.profilePicture ?? null,
   );
+  const [nsfwEnabled, setNsfwEnabled] = useState(user?.nsfwEnabled ?? false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || user.role === 'STAFF') {
+      return;
+    }
+    setNsfwEnabled(user.nsfwEnabled ?? false);
+  }, [user?.id, user?.nsfwEnabled, user?.role]);
 
   if (!isAuthenticated || !user) {
     return (
@@ -59,7 +70,8 @@ export default function ProfileScreen() {
   const pictureChanged =
     profilePicture?.mediaId !== user.profilePicture?.mediaId;
   const nameChanged = displayName.trim() !== (user.displayName ?? '');
-  const hasChanges = pictureChanged || nameChanged;
+  const nsfwChanged = nsfwEnabled !== user.nsfwEnabled;
+  const hasChanges = pictureChanged || nameChanged || nsfwChanged;
 
   async function handleSave() {
     if (!hasChanges) {
@@ -69,15 +81,27 @@ export default function ProfileScreen() {
     setError(null);
     setIsSaving(true);
     try {
-      await updateMeApi({
-        displayName: displayName.trim() || undefined,
-        profilePicture: profilePicture ?? undefined,
-      });
+      // SaveFeedbackPattern.StayOnPage — see docs/UX.md
+      await runSaveAction({
+        pattern: SaveFeedbackPattern.StayOnPage,
+        successMessage: 'Profile saved',
+        action: async () => {
+          await updateMeApi({
+            displayName: displayName.trim() || undefined,
+            profilePicture: profilePicture ?? undefined,
+            nsfwEnabled,
+          });
 
-      if (accessToken) {
-        const refreshed = await getMeApi();
-        setSession(accessToken, refreshed);
-      }
+          if (accessToken) {
+            const refreshed = await getMeApi();
+            setSession(accessToken, refreshed);
+          }
+
+          if (nsfwChanged) {
+            invalidateProjectsList();
+          }
+        },
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -140,9 +164,15 @@ export default function ProfileScreen() {
         <ProfileImagePicker value={profilePicture} onChange={setProfilePicture} />
       </AdminFormField>
 
+      <NsfwPreferenceField
+        value={nsfwEnabled}
+        onChange={setNsfwEnabled}
+        disabled={isSaving}
+      />
+
       {!hasChanges ? (
         <Text style={[styles.hint, { color: colors.textSecondary }]}>
-          Update your display name or photo, then save.
+          Update your display name, photo, or content preferences, then save.
         </Text>
       ) : null}
 

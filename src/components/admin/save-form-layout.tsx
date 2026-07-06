@@ -1,3 +1,7 @@
+/**
+ * Shared save form shell. Callers wire save feedback via runSaveAction in handlers.
+ * See docs/UX.md and SaveFeedbackPattern in lib/save-feedback.ts.
+ */
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,

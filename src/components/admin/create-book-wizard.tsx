@@ -13,6 +13,11 @@ import { type Href, useRouter } from 'expo-router';
 import { createTextItemApi } from '@/api/section-items.api';
 import { createSectionApi, publishSectionApi } from '@/api/sections.api';
 import { createBookApi, publishProjectApi } from '@/api/projects.api';
+import {
+  DEFAULT_PROJECT_ACCESS,
+  ProjectAccessFields,
+  type ProjectAccessFieldsValue,
+} from '@/components/admin/project-access-fields';
 import { useTheme } from '@/hooks/use-theme';
 import { FIELD_HINTS, validateRequiredText } from '@/lib/form-validation';
 import { invalidateProjectsList } from '@/stores/list-invalidation-store';
@@ -41,6 +46,8 @@ export function CreateBookWizard() {
   const [textContent, setTextContent] = useState('');
   const [textItemCreated, setTextItemCreated] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [accessFields, setAccessFields] =
+    useState<ProjectAccessFieldsValue>(DEFAULT_PROJECT_ACCESS);
 
   function canProceed(): boolean {
     switch (step) {
@@ -73,6 +80,8 @@ export function CreateBookWizard() {
           title: title.trim(),
           description: description.trim() || undefined,
           summary: summary.trim() || undefined,
+          visibility: accessFields.visibility,
+          isAdult: accessFields.isAdult,
         });
         setProjectId(project.id);
         setStep(2);
@@ -143,6 +152,7 @@ export function CreateBookWizard() {
         await publishSectionApi(projectId, sectionId);
         await publishProjectApi(projectId);
         invalidateProjectsList();
+        // SaveFeedbackPattern.NavigateReplace — landing on project detail is feedback; see docs/UX.md
         router.replace(`/project/${projectId}` as Href);
       } catch (err) {
         setError(getErrorMessage(err));
@@ -245,6 +255,7 @@ export function CreateBookWizard() {
               editable={!isLoading}
             />
           </Field>
+          <ProjectAccessFields value={accessFields} onChange={setAccessFields} />
         </View>
       ) : null}
 

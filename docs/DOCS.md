@@ -12,6 +12,7 @@
 | [AUTH.md](./AUTH.md) | Authentication module |
 | [PROJECT.md](./PROJECT.md) | Projects module |
 | [STAFF.md](./STAFF.md) | Staff module |
+| [UX.md](./UX.md) | Save/action feedback patterns (toasts, spinners) |
 | [MEDIA.md](./MEDIA.md) | Media upload module |
 | [BUILD_ANDROID.md](./BUILD_ANDROID.md) | Local Android release APK build |
 
@@ -24,6 +25,7 @@ Add new module docs as features land (e.g. `USERS.md` for Slice 5).
 3. **ROADMAP stays high-level** — slice status + links only; detailed flows live in module docs.
 4. **Link backend + Postman** — each module doc should reference matching backend docs and Postman folder.
 5. **Living docs** — when behavior changes (e.g. FAB moved from Admin to Projects tab), update the module doc immediately.
+6. **Save feedback** — new save or in-place action flows must declare a `SaveFeedbackPattern` in code and be listed in [UX.md](./UX.md).
 
 ## Module doc template
 

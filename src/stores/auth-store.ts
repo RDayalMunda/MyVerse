@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { getMeApi, loginApi, registerStaffApi } from '@/api/auth.api';
+import { getMeApi, loginApi, registerPublicApi, registerStaffApi } from '@/api/auth.api';
 import { bindAuthHandlers } from '@/api/client';
 import { zustandStorage } from '@/stores/storage';
 import type { RegisterStaffRequest, StaffProfile } from '@/types/staff';
-import type { User } from '@/types/user';
+import type { RegisterPublicRequest, User } from '@/types/user';
 
 type AuthState = {
   accessToken: string | null;
@@ -18,6 +18,7 @@ type AuthState = {
   clearSession: () => void;
   login: (email: string, password: string) => Promise<void>;
   registerStaff: (body: RegisterStaffRequest) => Promise<void>;
+  registerPublic: (body: RegisterPublicRequest) => Promise<void>;
   logout: () => void;
   hydrateSession: () => Promise<void>;
 };
@@ -61,6 +62,17 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const { accessToken, user } = await registerStaffApi(body);
+          set({ accessToken, user, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      registerPublic: async (body) => {
+        set({ isLoading: true });
+        try {
+          const { accessToken, user } = await registerPublicApi(body);
           set({ accessToken, user, isLoading: false });
         } catch (error) {
           set({ isLoading: false });

@@ -14,6 +14,29 @@
 
 **Visibility:** Admin JWT sees all non-deleted projects and all sections (including drafts). Staff and guests see published projects and published sections only (backend-enforced; frontend sends JWT when logged in).
 
+**Access control:** Each project has `visibility` (`PUBLIC`, `AUTHENTICATED`, `STAFF_ONLY`, `PRIVATE`) and optional `isAdult` (18+). Non-admins need `nsfwEnabled: true` on their account to see adult projects. Denied access returns 404 from the API (no separate blocked screen).
+
+---
+
+## Visibility and NSFW
+
+### Admin — set on create or edit
+
+On book/photoshoot **create** wizards (step 1) and **Edit project details** (`/project/[id]/edit`):
+
+| Field | Values | Default |
+|-------|--------|---------|
+| **Visibility** | Public, Signed-in users, Staff only, Private | `PUBLIC` |
+| **18+ content** | Toggle `isAdult` | off |
+
+Manage hub summary shows current visibility and 18+ status. Admin project detail header shows access badges.
+
+API: `visibility` and `isAdult` on `POST /projects` and `PATCH /projects/:id`; dedicated `PATCH /projects/:id/visibility` also available.
+
+### Consumer — enable 18+ viewing
+
+On `/profile` (ADMIN/PUBLIC users): **Show 18+ content** toggle → `PATCH /users/me` `{ nsfwEnabled }`. Saving invalidates the project list so adult-tagged published projects appear after the Projects tab refocuses.
+
 ---
 
 ## Section picker (Book + Photoshoot)
@@ -36,7 +59,7 @@ Project detail uses a **section selector** — like picking a season on a stream
 1. Log in as **ADMIN**
 2. Open **Projects** tab → tap **+** FAB → **Book**
 3. Complete the 4-step wizard (`admin/create-book`):
-   - **Book** — title (required), description, summary
+   - **Book** — title (required), description, summary, visibility, 18+ toggle
    - **Section** — label (required), optional description
    - **Content** — text body (required)
    - **Publish** — review → publish section → publish project
@@ -47,7 +70,7 @@ Project detail uses a **section selector** — like picking a season on a stream
 1. Log in as **ADMIN**
 2. Open **Projects** tab → tap **+** FAB → **Photoshoot**
 3. Complete the 4-step wizard (`admin/create-photoshoot`):
-   - **Photoshoot** — title (required), description, theme, location
+   - **Photoshoot** — title (required), description, theme, location, visibility, 18+ toggle
    - **Section** — label (required), optional description
    - **Photos** — pick one or more images; each upload becomes an IMAGE section item
    - **Publish** — review → publish section → publish project
@@ -57,7 +80,7 @@ Project detail uses a **section selector** — like picking a season on a stream
 
 1. Open **project detail** as admin → tap **Manage project**
 2. On the manage hub (`/project/[id]/manage`):
-   - **Edit project details** — title, description, book summary or photoshoot theme/location
+   - **Edit project details** — title, description, visibility, 18+, book summary or photoshoot theme/location
    - **Manage sections** — list, reorder, add, edit, publish/unpublish, delete
    - **Publish project** — when status is `DRAFT` or `UNPUBLISHED`
 3. From **Edit section** → **Manage items**:
@@ -65,6 +88,21 @@ Project detail uses a **section selector** — like picking a season on a stream
    - **Photoshoot:** add/replace/delete IMAGE items, reorder (max 120 photos per section)
 
 Destructive **unpublish/delete project** actions stay on project detail (not duplicated on the manage hub).
+
+## Save feedback (admin)
+
+Successful saves and in-place actions show a bottom toast. See [UX.md](./UX.md) for the full pattern guide.
+
+| Action | Feedback |
+|--------|----------|
+| Edit project details → Save | Toast "Project updated" + back to manage hub |
+| Publish project (manage hub) | Toast "Project published", stay on page |
+| Section edit → Save | Toast "Section updated" + back |
+| Section publish/unpublish | Toast "Section published" / "Section unpublished", stay |
+| Reorder sections or items | Toast "Order saved" |
+| Create wizards / new section | Navigation to landing screen (no toast) |
+
+Form saves use a minimum ~350ms spinner so fast APIs do not blink. Reorder actions skip the delay.
 
 ## Admin flow — manage drafts
 
@@ -101,12 +139,19 @@ After soft or permanent delete, the app navigates back. After unpublish, the det
 
 Draft projects are visible to admins on the Projects tab (status badges) but hidden from guests until published.
 
+## List pagination
+
+Projects and Staff tabs load **20 items per page** and append more on scroll (`onEndReached`). Pull-to-refresh resets to page 1.
+
+- **Admin project list:** header shows accurate total from API meta.
+- **Guest/public/staff project list:** header shows “X projects loaded” (backend filters by access after pagination; load-more uses batch size, not totalPages).
+
 ---
 
 ## API sequence (book create)
 
 ```
-POST /projects                    { type: BOOK, title, bookDetails? }
+POST /projects                    { type: BOOK, title, visibility?, isAdult?, bookDetails? }
 POST /projects/:id/sections       { label, description? }
 POST /projects/:id/sections/:sid/items   { kind: TEXT, textContent }
 POST /projects/:id/sections/:sid/publish
@@ -116,7 +161,7 @@ POST /projects/:id/publish
 ## API sequence (photoshoot create)
 
 ```
-POST /projects                    { type: PHOTOSHOOT, title, photoshootDetails? }
+POST /projects                    { type: PHOTOSHOOT, title, visibility?, isAdult?, photoshootDetails? }
 POST /projects/:id/sections       { label, description? }
 POST /media/upload/image          (per photo)
 POST /projects/:id/sections/:sid/items   { kind: IMAGE, file }  (one per photo)
@@ -129,7 +174,8 @@ POST /projects/:id/publish
 ## API sequence (admin edit)
 
 ```
-PATCH /projects/:id                         — update title, description, type extension
+PATCH /projects/:id                         — update title, description, visibility, isAdult, type extension
+PATCH /projects/:id/visibility              — { visibility } only
 POST  /projects/:id/sections                — create section
 PATCH /projects/:id/sections/:sid           — update section label/description
 PATCH /projects/:id/sections/reorder        — { sectionIds: [...] }
@@ -175,6 +221,7 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 
 | File | Role |
 |------|------|
+| `src/components/admin/project-access-fields.tsx` | Visibility picker + 18+ toggle (create/edit) |
 | `src/components/projects/project-create-fab.tsx` | Admin-only FAB on Projects tab |
 | `src/components/ui/create-fab.tsx` | FAB + option sheet |
 | `src/components/ui/option-sheet.tsx` | Reusable bottom-sheet picker |
@@ -186,7 +233,7 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 | `src/components/ui/confirm-dialog.tsx` | Cross-platform confirm modal (web + native) |
 | `src/components/projects/book-section-content.tsx` | Vertical TEXT for selected section |
 | `src/components/projects/photoshoot-section-content.tsx` | Horizontal IMAGE pager + tap → fullscreen |
-| `src/hooks/use-projects.ts` | Project list |
+| `src/hooks/use-projects.ts` | Paginated project list (`loadMore`, `hasMore`) |
 | `src/hooks/use-stale-list-refetch.ts` | Silent refetch when list marked stale on focus |
 | `src/stores/list-invalidation-store.ts` | Stale flags after mutations |
 | `src/components/admin/project-book-fields.tsx` | Shared book project form fields |
@@ -199,7 +246,7 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 | `src/hooks/use-project.ts` | Single project detail fetch |
 | `src/hooks/use-selected-section.ts` | Selected section state |
 | `src/lib/permissions.ts` | `canManageProjects()` |
-| `src/api/projects.api.ts` | List, get, create, update, publish, unpublish, delete |
+| `src/api/projects.api.ts` | List, get, create, update, visibility, publish, unpublish, delete |
 | `src/api/sections.api.ts` | Section create, update, delete, reorder, publish, unpublish |
 | `src/api/section-items.api.ts` | Item create, update, delete, reorder |
 
@@ -223,6 +270,11 @@ DELETE /projects/:id/permanent        — irreversible remove project + content
 16. Admin → Manage sections → add section → publish section on live project
 17. Admin → Manage items → add second TEXT block (book) or photo (photoshoot) → reorder → delete
 18. Non-admin: `/project/[id]/manage` shows access denied
+19. Admin creates book with **Staff only** visibility → staff sees it; guest does not
+20. Admin marks project **18+** → guest without nsfw does not see it; user enables 18+ on profile → project appears
+21. Admin edits visibility on published project → consumer list updates after refocus
+22. Projects tab with 25+ items → scroll loads page 2; pull-to-refresh resets list
+23. Staff tab with 25+ profiles → scroll loads more; footer spinner while loading
 
 ## Prerequisites
 

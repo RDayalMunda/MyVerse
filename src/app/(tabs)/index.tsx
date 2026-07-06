@@ -26,7 +26,16 @@ export default function ProjectsScreen() {
   const { colors } = useTheme();
   const user = useAuthStore((state) => state.user);
   const isAdmin = canManageProjects(user?.role);
-  const { projects, meta, isLoading, error, refetch } = useProjects();
+  const {
+    projects,
+    meta,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    error,
+    refetch,
+    loadMore,
+  } = useProjects({ isAdmin });
 
   useStaleListRefetch('projects', refetch);
 
@@ -72,7 +81,9 @@ export default function ProjectsScreen() {
             </Text>
             {meta ? (
               <Text style={[styles.count, { color: colors.textSecondary }]}>
-                {meta.total} project{meta.total === 1 ? '' : 's'}
+                {isAdmin
+                  ? `${meta.total} project${meta.total === 1 ? '' : 's'}`
+                  : `${projects.length} project${projects.length === 1 ? '' : 's'} loaded`}
               </Text>
             ) : null}
           </View>
@@ -97,6 +108,15 @@ export default function ProjectsScreen() {
         renderItem={({ item }) => (
           <ProjectCard project={item} showStatus={isAdmin} />
         )}
+        onEndReached={() => loadMore()}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator color={colors.tint} />
+            </View>
+          ) : null
+        }
       />
       {isLoading && projects.length > 0 ? (
         <View style={styles.loadingOverlay}>
@@ -135,5 +155,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
   },
 });
